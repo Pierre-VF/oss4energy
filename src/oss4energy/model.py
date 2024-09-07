@@ -12,8 +12,8 @@ class ProjectDetails(BaseModel):
     name: str
     url: str
     website: Optional[str]
-    description: str
-    license: str
+    description: Optional[str]
+    license: Optional[str]
     latest_update: datetime
-    language: str
+    language: Optional[str]
     raw_details: Optional[dict]

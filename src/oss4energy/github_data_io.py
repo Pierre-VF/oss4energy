@@ -45,12 +45,16 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
     r = web_get(f"https://api.github.com/repos/{repo_path}", authorise=False)
 
+    license = r["license"]
+    if license is not None:
+        license = r["name"]
+
     details = ProjectDetails(
         name=r["name"],
         url=r["html_url"],
         website=r["homepage"],
         description=r["description"],
-        license=r["license"]["name"],
+        license=license,
         language=r["language"],
         latest_update=datetime.fromisoformat(r["updated_at"]),
         raw_details=r,
