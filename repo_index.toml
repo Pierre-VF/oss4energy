@@ -7,8 +7,10 @@
 #
 [github_hosted]
 organisations = [
-    "https://github.com/OpenSTEF",
+    "https://github.com/carbon-data-specification",
+    "https://github.com/covXtreme",
     "https://github.com/openclimatefix",
+    "https://github.com/OpenSTEF",
 ]
 repositories = [
 ]

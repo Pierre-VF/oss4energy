@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "OSS4Energy"
+version = "0.0.0"
+description = "Package to create listings of Open Source for Energy"
+authors = ["Pierre VF"]
+packages = []
+include = [
+    "oss4energy"
+]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.2"
+pytest = "^8.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
