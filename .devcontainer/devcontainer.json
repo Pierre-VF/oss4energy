@@ -1,0 +1,80 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "OSS4Energy",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"mhutchie.git-graph",
+				"samuelcolvin.jinjahtml",
+
+				// Docstring generator
+				"njpwerner.autodocstring",
+
+				// Linting and formatting of your python code
+				"charliermarsh.ruff",
+
+				// Markdown linting keeps your markdown files looking good.
+				// and, it's a good idea to use Markdown for your documentation.
+				// https://github.com/DavidAnson/vscode-markdownlint
+				"davidanson.vscode-markdownlint",
+
+				// Python linting
+				"ms-python.vscode-pylance"
+			],
+			"settings": {
+				"files.exclude": {
+					"*.egg-info": true,
+					"**/__pycache__": true,
+					"**/.coverage": true,
+					"**/.ipynb_checkpoints": true,
+					"**/.pytest_cache": true,
+					"**/.ruff_cache": true,
+					"**/build": true
+				},
+				"[python]": {
+					// Here we state that we want Ruff to automatically format our code on save.
+					// You might hate this - you can delete it.
+					// Otherwise, it's a great way to enforce sensible and consistent
+					// formatting on your code.
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": "always",
+						"source.fixAll": "explicit"
+					},
+					"editor.formatOnSave": true,
+					"editor.defaultFormatter": "charliermarsh.ruff"
+				},
+				//For shell, make bash default
+				"terminal.integrated.defaultProfile.linux": "bash",
+				// For easy pytest management in the sidebar
+				"python.testing.pytestEnabled": true,
+				// For cleaner search
+				"search.exclude": {
+					"**/.git": true,
+					"**/.ruff_cache": true,
+					"**/.pytest_cache": true,
+					"**/__coverage_report": true,
+					"**/dist": true,
+					"**/build": true
+				},
+				// For documentation and format used in repo
+				"autoDocstring.docstringFormat": "sphinx-notypes",
+				"editor.rulers": [88, 120]
+			}
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// Currently used:
+	// (none)
+	"forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "make install"
+
+	// Make sure that the poetry shell is used
+	//"postStartCommand": "poetry shell"
+}

@@ -1,0 +1,14 @@
+
+# This first sections is for URLs of repositories on github, projects are added in 2 different manners:
+#  1) if the project is part of a group of projects in an organisation, the organisation URL should be added
+#  2) if the project consists of a single repository, then the URL of the repository should be added 
+#
+# Note: to avoid duplicates and facilitate maintainability, list entries shall be ordered in alphabetical order
+#
+[github_hosted]
+organisations = [
+    "https://github.com/OpenSTEF",
+    "https://github.com/openclimatefix",
+]
+repositories = [
+]
