@@ -1,13 +1,12 @@
 [tool.poetry]
-name = "OSS4Energy"
+name = "oss4energy"
 version = "0.0.0"
 description = "Package to create listings of Open Source for Energy"
 authors = ["Pierre VF"]
-packages = []
-include = [
-    "oss4energy"
+packages = [
+    {include = "oss4energy", from = "src"}
 ]
-package-mode = false
+package-mode = true
 
 [tool.poetry.dependencies]
 python = "^3.12"
