@@ -7,6 +7,7 @@
 #
 [github_hosted]
 organisations = [
+    "https://github.com/alliander-opensource/",
     "https://github.com/carbon-data-specification",
     "https://github.com/covXtreme",
     "https://github.com/openclimatefix",
