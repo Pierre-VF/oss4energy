@@ -11,6 +11,8 @@ def _process_url_if_needed(x: str) -> str:
     full_url_prefix = "https://github.com/"
     if x.startswith(full_url_prefix):
         x = x.replace(full_url_prefix, "")
+    if x.endswith("/"):
+        x = x[:-1]
     return x
 
 
