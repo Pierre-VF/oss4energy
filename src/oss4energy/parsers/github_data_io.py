@@ -5,7 +5,7 @@ from functools import lru_cache
 from oss4energy.config import SETTINGS
 from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
-from oss4energy.parsers import cached_web_get_json
+from oss4energy.parsers import cached_web_get_json, cached_web_get_text
 
 
 def _process_url_if_needed(x: str) -> str:
@@ -48,9 +48,15 @@ def _github_headers() -> dict[str, str]:
     return headers
 
 
-def web_get(url: str) -> dict:
-    headers = _github_headers()
-    res = cached_web_get_json(url=url, headers=headers)
+def web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
+    if with_headers:
+        headers = _github_headers()
+    else:
+        headers = None
+    if is_json:
+        res = cached_web_get_json(url=url, headers=headers)
+    else:
+        res = cached_web_get_text(url=url, headers=headers)
     return res
 
 
@@ -83,3 +89,17 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         raw_details=r,
     )
     return details
+
+
+def fetch_repository_readme(repository_url: str) -> str | None:
+    repo_name = _process_url_if_needed(repository_url)
+    try:
+        md_content = web_get(
+            f"https://raw.githubusercontent.com/{repo_name}/main/README.md",
+            with_headers=None,
+            is_json=False,
+        )
+    except Exception as e:
+        md_content = f"ERROR with README.md ({e})"
+
+    return md_content

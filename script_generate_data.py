@@ -12,6 +12,7 @@ from oss4energy.log import log_info
 from oss4energy.parsers.github_data_io import (
     fetch_repositories_in_organisation,
     fetch_repository_details,
+    fetch_repository_readme,
 )
 
 target_output_file = ".data/export.csv"
@@ -55,6 +56,10 @@ for i in repos_to_screen:
 
 
 df = pd.DataFrame([i.__dict__ for i in screening_results])
+
+
+df["readme"] = df["url"].apply(fetch_repository_readme)
+
 
 df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
 

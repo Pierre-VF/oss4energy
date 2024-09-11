@@ -12,11 +12,14 @@ from oss4energy.log import log_info
 WEB_SESSION = requests.Session()
 
 
-def cached_web_get_json(
-    url: str, headers: dict | None = None, wait_after_web_query: bool = True
-) -> dict:
+def _cached_web_get(
+    url: str,
+    headers: dict | None = None,
+    wait_after_web_query: bool = True,
+    is_json: bool = True,
+) -> dict | str:
     # Uses the cache to ensure that requests are minimised
-    out = load_from_database(url)
+    out = load_from_database(url, is_json=is_json)
     if out is None:
         log_info(f"Web GET: {url}")
         r = WEB_SESSION.get(
@@ -24,10 +27,35 @@ def cached_web_get_json(
             headers=headers,
         )
         r.raise_for_status()
-        out = r.json()
-        save_to_database(url, out)
+        if is_json:
+            out = r.json()
+        else:
+            out = r.text
+        save_to_database(url, out, is_json=is_json)
         if wait_after_web_query:
             time.sleep(0.1)  # To avoid triggering rate limits on APIs
     else:
         log_info(f"Cache-loading: {url}")
     return out
+
+
+def cached_web_get_json(
+    url: str, headers: dict | None = None, wait_after_web_query: bool = True
+) -> dict:
+    return _cached_web_get(
+        url=url,
+        headers=headers,
+        wait_after_web_query=wait_after_web_query,
+        is_json=True,
+    )
+
+
+def cached_web_get_text(
+    url: str, headers: dict | None = None, wait_after_web_query: bool = True
+) -> str:
+    return _cached_web_get(
+        url=url,
+        headers=headers,
+        wait_after_web_query=wait_after_web_query,
+        is_json=False,
+    )

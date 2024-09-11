@@ -32,18 +32,26 @@ SQLModel.metadata.create_all(_ENGINE)
 # -------------------------------------------------------------------------------------
 # Actual methods
 # -------------------------------------------------------------------------------------
-def load_from_database(key: str) -> dict | None:
+def load_from_database(key: str, is_json: bool) -> dict | None:
     with Session(_ENGINE) as session:
         res = session.exec(select(Cache).where(Cache.id == key)).first()
     if res is None:
         return None
     else:
-        return json.loads(res.value)
+        if is_json:
+            return json.loads(res.value)
+        else:
+            return res.value
 
 
-def save_to_database(key: str, value: dict) -> None:
-    jsoned_value = json.dumps(value)
+def save_to_database(key: str, value: dict, is_json: bool) -> None:
+    if is_json:
+        value_to_write = json.dumps(value)
+    else:
+        value_to_write = value
 
     with Session(_ENGINE) as session:
-        session.add(Cache(id=key, value=jsoned_value, fetched_at=datetime.now(tz=UTC)))
+        session.add(
+            Cache(id=key, value=value_to_write, fetched_at=datetime.now(tz=UTC))
+        )
         session.commit()
