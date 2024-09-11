@@ -17,3 +17,7 @@ build:
 update_list:
 	python script_generate_index.py
 	black repo_index.toml
+
+.PHONY: run
+run:
+	python script_generate_data.py

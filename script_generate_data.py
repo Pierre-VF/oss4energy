@@ -14,6 +14,8 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_details,
 )
 
+target_output_file = ".data/export.csv"
+
 log_info("Loading organisations and repositories to be indexed")
 with open("repo_index.toml", "rb") as f:
     repos_from_toml = tomllib.load(f)
@@ -54,7 +56,7 @@ for i in repos_to_screen:
 
 df = pd.DataFrame([i.__dict__ for i in screening_results])
 
-df.drop(columns=["raw_details"]).to_csv(".data/export.csv", sep=";")
+df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
 
 
 df_python = df[df["language"].apply(lambda x: x == "Python")]
@@ -76,4 +78,10 @@ def _f_description_ok(x):
 
 df_non_depr = df[df["description"].apply(_f_description_ok)]
 
-print("DONE!")
+print(
+    f"""
+    
+>>> Data was exported to: {target_output_file}
+    
+"""
+)
