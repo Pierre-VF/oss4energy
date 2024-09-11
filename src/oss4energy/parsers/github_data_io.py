@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from functools import lru_cache
 
 from oss4energy.config import SETTINGS
@@ -16,8 +17,25 @@ def _process_url_if_needed(x: str) -> str:
     return x
 
 
+class GithubTargetType(Enum):
+    ORGANISATION = "ORGANISATION"
+    REPOSITORY = "REPOSITORY"
+    UNKNOWN = "UNKNOWN"
+
+    @staticmethod
+    def identify(url: str) -> "GithubTargetType":
+        processed = _process_url_if_needed(url)
+        n_slashes = processed.count("/")
+        if n_slashes < 1:
+            return GithubTargetType.ORGANISATION
+        elif n_slashes == 1:
+            return GithubTargetType.REPOSITORY
+        else:
+            return GithubTargetType.UNKNOWN
+
+
 @lru_cache(maxsize=1)
-def _github_headers():
+def _github_headers() -> dict[str, str]:
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",

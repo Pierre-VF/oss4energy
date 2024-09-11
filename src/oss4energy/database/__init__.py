@@ -3,6 +3,7 @@ Module to manage a database input
 """
 
 import json
+from datetime import UTC, datetime
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -15,6 +16,7 @@ from oss4energy.config import SETTINGS
 class Cache(SQLModel, table=True):
     id: str = Field(default=None, primary_key=True, nullable=False)
     value: str
+    fetched_at: datetime
 
 
 # -------------------------------------------------------------------------------------
@@ -43,5 +45,5 @@ def save_to_database(key: str, value: dict) -> None:
     jsoned_value = json.dumps(value)
 
     with Session(_ENGINE) as session:
-        session.add(Cache(id=key, value=jsoned_value))
+        session.add(Cache(id=key, value=jsoned_value, fetched_at=datetime.now(tz=UTC)))
         session.commit()
