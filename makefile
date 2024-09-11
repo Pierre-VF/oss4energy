@@ -12,3 +12,8 @@ install:
 .PHONY: build
 build:
 	poetry lock
+
+.PHONY: update_list
+update_list:
+	python script_generate_index.py
+	black repo_index.toml

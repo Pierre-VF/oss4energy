@@ -42,27 +42,21 @@ repos_to_screen = []
 for org_url in repos_from_toml["github_hosted"]["organisations"]:
     x = fetch_repositories_in_organisation(org_url)
     [repos_to_screen.append(i) for i in x.values()]
-    time.sleep(0.5)  # To avoid triggering rate limits on API
-    if len(repos_to_screen) > 10:
-        break
+    time.sleep(0.1)  # To avoid triggering rate limits on API
 
 screening_results = []
 for i in repos_to_screen:
     try:
         if i.endswith("/.github"):
             continue
-        print(i)
         screening_results.append(fetch_repository_details(i))
-        time.sleep(0.5)  # To avoid triggering rate limits on API
+        time.sleep(0.1)  # To avoid triggering rate limits on API
     except Exception as e:
         print(f" > Error ({e})")
-    if len(screening_results) > 10:
-        break
 
 
 df = pd.DataFrame([i.__dict__ for i in screening_results])
 
 df.to_csv(".data/export.csv", sep=";")
 
-
-print(repos_from_toml)
+print("DONE!")

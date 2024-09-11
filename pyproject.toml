@@ -17,6 +17,7 @@ pandas = "^2.2.2"
 beautifulsoup4 = "^4.12.3"
 tomlkit = "^0.13.2"
 sqlmodel = "^0.0.22"
+black = "^24.8.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.2"
