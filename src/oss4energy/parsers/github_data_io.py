@@ -1,12 +1,8 @@
 from datetime import datetime
 
-import requests
-
 from oss4energy.config import SETTINGS
-from oss4energy.database import load_from_database, save_to_database
 from oss4energy.model import ProjectDetails
-
-SESSION = requests.Session()
+from oss4energy.parsers import cached_web_get_json
 
 
 def _process_url_if_needed(x: str) -> str:
@@ -17,24 +13,14 @@ def _process_url_if_needed(x: str) -> str:
 
 
 def web_get(url: str, authorise: bool) -> dict:
-    # Uses the cache to ensure that requests are minimised
-    out = load_from_database(url)
-    if out is None:
-        headers = {
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-        }
-        if authorise:
-            headers["Authorization"] = f"Bearer {SETTINGS.GITHUB_API_TOKEN}"
-
-        r = SESSION.get(
-            url=url,
-            headers=headers,
-        )
-        r.raise_for_status()
-        out = r.json()
-        save_to_database(url, out)
-    return out
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if authorise:
+        headers["Authorization"] = f"Bearer {SETTINGS.GITHUB_API_TOKEN}"
+    res = cached_web_get_json(url=url, headers=headers)
+    return res
 
 
 def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]:

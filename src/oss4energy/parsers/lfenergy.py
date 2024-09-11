@@ -2,14 +2,15 @@
 Parser for LF Energy projects
 """
 
-import requests
 from bs4 import BeautifulSoup
+
+from oss4energy.parsers import WEB_SESSION
 
 _PROJECT_PAGE_URL_BASE = "https://lfenergy.org/projects/"
 
 
 def fetch_all_project_urls() -> list[str]:
-    r = requests.get("https://lfenergy.org/our-projects/")
+    r = WEB_SESSION.get("https://lfenergy.org/our-projects/")
     r.raise_for_status()
     b = BeautifulSoup(r.text, features="html.parser")
 
@@ -24,7 +25,7 @@ def fetch_all_project_urls() -> list[str]:
 def fetch_project_github_urls(project_url: str) -> list[str]:
     if not project_url.startswith(_PROJECT_PAGE_URL_BASE):
         raise ValueError(f"Unsupported page URL ({project_url})")
-    r = requests.get(project_url)
+    r = WEB_SESSION.get(project_url)
     r.raise_for_status()
     b = BeautifulSoup(r.text, features="html.parser")
 

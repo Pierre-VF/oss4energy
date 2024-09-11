@@ -1,4 +1,4 @@
-from oss4energy.github_data_io import (
+from oss4energy.parsers.github_data_io import (
     ProjectDetails,
     fetch_repositories_in_organisation,
     fetch_repository_details,
