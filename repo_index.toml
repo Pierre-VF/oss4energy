@@ -1,16 +1,40 @@
-
-# This first sections is for URLs of repositories on github, projects are added in 2 different manners:
-#  1) if the project is part of a group of projects in an organisation, the organisation URL should be added
-#  2) if the project consists of a single repository, then the URL of the repository should be added 
-#
-# Note: to avoid duplicates and facilitate maintainability, list entries shall be ordered in alphabetical order
-#
 [github_hosted]
 organisations = [
-    "https://github.com/carbon-data-specification",
-    "https://github.com/covXtreme",
-    "https://github.com/openclimatefix",
+    "https://github.com/BatteryDataAlliance",
+    "https://github.com/EVerest",
+    "https://github.com/Energinet-DataHub/green-energy-hub#Solution-Roadmap",
+    "https://github.com/Green-Software-Foundation",
     "https://github.com/OpenSTEF",
+    "https://github.com/OpenSynth-energy/OpenSynth",
+    "https://github.com/PowerGridModel",
+    "https://github.com/carbon-data-specification",
+    "https://github.com/citrineos/citrineos/",
+    "https://github.com/com-pas/",
+    "https://github.com/covXtreme",
+    "https://github.com/dynawo",
+    "https://github.com/fledge-power",
+    "https://github.com/flexmeasures/",
+    "https://github.com/gridcapacitymap",
+    "https://github.com/gripenergy",
+    "https://github.com/hyphae",
+    "https://github.com/openclimatefix",
+    "https://github.com/openeemeter",
+    "https://github.com/opengeh",
+    "https://github.com/openleadr",
+    "https://github.com/opfab",
+    "https://github.com/orgs/PowerGridModel/discussions",
+    "https://github.com/orgs/PowerGridModel/projects/1",
+    "https://github.com/osgp",
+    "https://github.com/powsybl",
+    "https://github.com/rtdip",
+    "https://github.com/seapath",
+    "https://github.com/shapeshifter",
+    "https://github.com/slacgismo/gridlabd",
+    "https://github.com/sogno-platform",
+    "https://github.com/trolie/spec",
 ]
 repositories = [
+    "https://github.com/ADGEfficiency/energy-py-linear",
+    "https://github.com/DrafProject/elmada",
+    "https://github.com/singularity-energy/open-grid-emissions",
 ]
