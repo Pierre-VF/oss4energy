@@ -63,6 +63,7 @@ df = pd.DataFrame([i.__dict__ for i in screening_results])
 df.set_index("id", inplace=True)
 
 
+log_info("Fetching READMEs for all repositories in Github")
 df["readme"] = df["url"].apply(fetch_repository_readme)
 
 

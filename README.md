@@ -35,6 +35,7 @@ Once you have completed the steps above, you can run the following commands (onl
 - To refresh the list of targets to be scraped:
     > make update_list
 
+Note: the indexing is heavy and involves a series of web (and API) calls. A caching mechanism is therefore added in the implementation of the requests (with a simple SQLite database). This means that you might potentially end with a large file stored locally on your disk (though currently still under 50 Mb). 
 
 ## Need new features or found a bug?
 
