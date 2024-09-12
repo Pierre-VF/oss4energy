@@ -17,7 +17,7 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_readme,
 )
 
-target_output_file = ".data/export.csv"
+target_output_file = ".data/listing_data.csv"
 
 log_info("Loading organisations and repositories to be indexed")
 with open("repo_index.toml", "rb") as f:
@@ -93,7 +93,7 @@ print(
 
 
 # Outputting details to a new TOML
-output_types = ".data/all_types.toml"  # This is to be coordinated with the makefile
+output_types = ".data/summary.toml"  # This is to be coordinated with the makefile
 
 languages = sorted_list_of_unique_elements(df["language"])
 organisations = sorted_list_of_unique_elements(df["organisation"])

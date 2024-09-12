@@ -2,7 +2,14 @@
 
 (This is a work in progress - the resulting index will be published when available, so please keep an eye on this repository and tip the project about any resources that you are aware of)
 
+The raw datasets are published here (nice layout has not been made yet):
+
+- [Raw index](https://data.pierrevf.consulting/oss4energy/summary.toml)
+- [Listing as CSV](https://data.pierrevf.consulting/oss4energy/listing_data.csv)
+
+
 Other mapping initiatives that you may want to consider looking at:
+
 - https://landscape.lfenergy.org/
 - https://opensustain.tech/
 

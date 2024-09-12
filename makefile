@@ -21,7 +21,7 @@ update_list:
 .PHONY: run
 run:
 	python scripts/generate_data.py
-	black .data/all_types.toml
+	black .data/summary.toml
 
 .PHONY: publish
 publish:

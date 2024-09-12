@@ -11,8 +11,8 @@ assert (
 ), "Password must be defined for this to work"
 
 files_out = [
-    ".data/all_types.toml",
-    ".data/export.csv",
+    ".data/summary.toml",
+    ".data/listing_data.csv",
 ]
 
 with FTP(
