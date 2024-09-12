@@ -27,12 +27,12 @@ with open("repo_index.toml", "rb") as f:
 bad_organisations = []
 bad_repositories = []
 
+organisations_to_screen = repos_from_toml["github_hosted"]["organisations"]
+repos_to_screen = repos_from_toml["github_hosted"]["repositories"]
+
 
 log_info("Fetching data for all organisations in Github")
-repos_to_screen = []
-for org_url in sorted_list_of_unique_elements(
-    repos_from_toml["github_hosted"]["organisations"]
-):
+for org_url in sorted_list_of_unique_elements(organisations_to_screen):
     url2check = org_url.replace("https://", "")
     if url2check.endswith("/"):
         url2check = url2check[:-1]
