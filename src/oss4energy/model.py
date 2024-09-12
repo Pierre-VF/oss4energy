@@ -9,7 +9,9 @@ from pydantic import BaseModel
 
 
 class ProjectDetails(BaseModel):
+    id: str
     name: str
+    organisation: Optional[str]
     url: str
     website: Optional[str]
     description: Optional[str]

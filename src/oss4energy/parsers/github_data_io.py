@@ -74,12 +74,16 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
     r = web_get(f"https://api.github.com/repos/{repo_path}")
 
+    organisation = repo_path.split("/")[0]
+
     license = r["license"]
     if license is not None:
-        license = r["name"]
+        license = license["name"]
 
     details = ProjectDetails(
+        id=repo_path,
         name=r["name"],
+        organisation=organisation,
         url=r["html_url"],
         website=r["homepage"],
         description=r["description"],

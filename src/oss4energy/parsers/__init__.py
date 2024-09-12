@@ -26,11 +26,16 @@ def _cached_web_get(
             url=url,
             headers=headers,
         )
-        r.raise_for_status()
         if is_json:
+            r.raise_for_status()
             out = r.json()
         else:
-            out = r.text
+            if r.status_code == 404:
+                log_info(f"> No resource found for: {url}")
+                out = "(None)"
+            else:
+                r.raise_for_status()
+                out = r.text
         save_to_database(url, out, is_json=is_json)
         if wait_after_web_query:
             time.sleep(0.1)  # To avoid triggering rate limits on APIs
