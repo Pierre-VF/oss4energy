@@ -2,6 +2,10 @@
 
 (This is a work in progress - the resulting index will be published when available, so please keep an eye on this repository and tip the project about any resources that you are aware of)
 
+Other mapping initiatives that you may want to consider looking at:
+- https://landscape.lfenergy.org/
+
+
 ## Installation
 
 The installation is straightforward if you are used to Python.
