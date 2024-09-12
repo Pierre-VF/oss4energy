@@ -41,6 +41,23 @@ class GithubTargetType(Enum):
             return GithubTargetType.UNKNOWN
 
 
+def split_organisations_repositories_others(
+    x: list[str],
+) -> tuple[list[str], list[str], list[str]]:
+    orgs = []
+    repos = []
+    others = []
+    for i in x:
+        tt_i = GithubTargetType.identify(i)
+        if tt_i is GithubTargetType.ORGANISATION:
+            orgs.append(i)
+        elif tt_i is GithubTargetType.REPOSITORY:
+            repos.append(i)
+        else:
+            others.append(i)
+    return orgs, repos, others
+
+
 @lru_cache(maxsize=1)
 def _github_headers() -> dict[str, str]:
     headers = {

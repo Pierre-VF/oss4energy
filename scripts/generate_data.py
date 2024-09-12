@@ -17,7 +17,7 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_readme,
 )
 
-target_output_file = ".data/export.json"
+target_output_file = ".data/export.csv"
 
 log_info("Loading organisations and repositories to be indexed")
 with open("repo_index.toml", "rb") as f:
@@ -63,8 +63,14 @@ df = pd.DataFrame([i.__dict__ for i in screening_results])
 df.set_index("id", inplace=True)
 
 
+def _f_readme(x):
+    y = fetch_repository_readme(x)
+    y = y.replace("\n", " ; ")
+    return y[:1000]
+
+
 log_info("Fetching READMEs for all repositories in Github")
-df["readme"] = df["url"].apply(fetch_repository_readme)
+df["readme"] = df["url"].apply(_f_readme)
 
 
 if target_output_file.endswith(".csv"):
