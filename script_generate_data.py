@@ -7,6 +7,7 @@ Warning: unauthenticated users have a rate limit of 60 calls per hour
 
 import pandas as pd
 import tomllib
+from tomlkit import document, dump
 
 from oss4energy.log import log_info
 from oss4energy.parsers.github_data_io import (
@@ -15,7 +16,7 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_readme,
 )
 
-target_output_file = ".data/export.csv"
+target_output_file = ".data/export.json"
 
 log_info("Loading organisations and repositories to be indexed")
 with open("repo_index.toml", "rb") as f:
@@ -56,37 +57,49 @@ for i in repos_to_screen:
 
 
 df = pd.DataFrame([i.__dict__ for i in screening_results])
+df.set_index("id", inplace=True)
 
 
 df["readme"] = df["url"].apply(fetch_repository_readme)
 
 
-df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
+if target_output_file.endswith(".csv"):
+    df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
+elif target_output_file.endswith(".json"):
+    df.drop(columns=["raw_details"]).T.to_json(target_output_file)
+else:
+    raise ValueError(f"Unsupported file type for export: {target_output_file}")
 
-
-df_python = df[df["language"].apply(lambda x: x == "Python")]
-df_java = df[df["language"].apply(lambda x: x == "Java")]
-
-
-# Non deprecated
-def _f_description_ok(x):
-    if x is None:
-        return True
-    x_lower = x.lower()
-    if "deprecated" in x_lower:
-        return False
-    elif "legacy" in x_lower:
-        return False
-    else:
-        return True
-
-
-df_non_depr = df[df["description"].apply(_f_description_ok)]
 
 print(
     f"""
     
 >>> Data was exported to: {target_output_file}
+    
+"""
+)
+
+
+# Outputting details to a new TOML
+output_types = ".data/all_types.toml"  # This is to be coordinated with the makefile
+
+languages = list(df["language"].sort_values().unique())
+organisations = list(df["organisation"].sort_values().unique())
+licences = list(df["license"].sort_values().unique())
+
+# TOML formatting
+doc = document()
+doc.add("organisations", [str(i) for i in organisations])
+doc.add("language", [str(i) for i in languages])
+doc.add("licences", [str(i) for i in licences])
+log_info(f"Exporting new index to {output_types}")
+with open(output_types, "w") as fp:
+    dump(doc, fp, sort_keys=True)
+
+print(
+    f"""
+    
+>>> Types were exported to: {output_types}
     
 """
 )

@@ -21,3 +21,4 @@ update_list:
 .PHONY: run
 run:
 	python script_generate_data.py
+	black .data/all_types.toml
