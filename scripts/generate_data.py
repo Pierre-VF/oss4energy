@@ -91,8 +91,18 @@ languages = sorted_list_of_unique_elements(df["language"])
 organisations = sorted_list_of_unique_elements(df["organisation"])
 licences = sorted_list_of_unique_elements(df["license"])
 
+stats = {
+    "repositories": len(df),
+    "organisations": len(organisations),
+}
+
+failed = dict(organisations=bad_organisations, repositories=bad_repositories)
+
+
 # TOML formatting
 doc = document()
+doc.add("statistics", stats)
+doc.add("failures", failed)
 doc.add("organisations", [str(i) for i in organisations])
 doc.add("language", [str(i) for i in languages])
 doc.add("licences", [str(i) for i in licences])
