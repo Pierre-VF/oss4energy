@@ -7,12 +7,19 @@ from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
 from oss4energy.parsers import cached_web_get_json, cached_web_get_text
 
+GITHUB_URL_BASE = "https://github.com/"
 
-def _process_url_if_needed(x: str) -> str:
-    full_url_prefix = "https://github.com/"
-    if x.startswith(full_url_prefix):
-        x = x.replace(full_url_prefix, "")
-    if x.endswith("/"):
+
+def extract_organisation_and_repository_as_url_block(x: str) -> str:
+    # Cleaning up Github prefix
+    if x.startswith(GITHUB_URL_BASE):
+        x = x.replace(GITHUB_URL_BASE, "")
+    # Removing eventual extra information in URL
+    for i in ["#", "&"]:
+        if i in x:
+            x = x.split(i)[0]
+    # Removing trailing "/", if any
+    while x.endswith("/"):
         x = x[:-1]
     return x
 
@@ -24,7 +31,7 @@ class GithubTargetType(Enum):
 
     @staticmethod
     def identify(url: str) -> "GithubTargetType":
-        processed = _process_url_if_needed(url)
+        processed = extract_organisation_and_repository_as_url_block(url)
         n_slashes = processed.count("/")
         if n_slashes < 1:
             return GithubTargetType.ORGANISATION
@@ -61,7 +68,9 @@ def web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
 
 
 def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]:
-    organisation_name = _process_url_if_needed(organisation_name)
+    organisation_name = extract_organisation_and_repository_as_url_block(
+        organisation_name
+    )
 
     res = web_get(
         f"https://api.github.com/orgs/{organisation_name}/repos",
@@ -70,7 +79,7 @@ def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]
 
 
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
-    repo_path = _process_url_if_needed(repo_path)
+    repo_path = extract_organisation_and_repository_as_url_block(repo_path)
 
     r = web_get(f"https://api.github.com/repos/{repo_path}")
 
@@ -96,7 +105,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
 
 def fetch_repository_readme(repository_url: str) -> str | None:
-    repo_name = _process_url_if_needed(repository_url)
+    repo_name = extract_organisation_and_repository_as_url_block(repository_url)
     try:
         md_content = web_get(
             f"https://raw.githubusercontent.com/{repo_name}/main/README.md",

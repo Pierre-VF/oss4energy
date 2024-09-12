@@ -1,11 +1,15 @@
 import time
 
-import pandas as pd
 import tomllib
 from tomlkit import document, dump
 
+from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
-from oss4energy.parsers.github_data_io import GithubTargetType
+from oss4energy.parsers.github_data_io import (
+    GITHUB_URL_BASE,
+    GithubTargetType,
+    extract_organisation_and_repository_as_url_block,
+)
 from oss4energy.parsers.lfenergy import (
     fetch_all_project_urls,
     fetch_project_github_urls,
@@ -47,19 +51,24 @@ for i in existing_github_orgs:
         dropped_urls.append(i)
         log_info("DROPPING {i} (target is unclear)")
 
-# Adding new
-repos_from_toml["github_hosted"]["organisations"] = list(
-    pd.Series(new_github_orgs + github_organisations_urls_lf_energy)
-    .sort_values()
-    .unique()
+cleaned_repositories_url = sorted_list_of_unique_elements(
+    existing_github_repos + github_repositories_urls_lf_energy
 )
-repos_from_toml["github_hosted"]["repositories"] = list(
-    pd.Series(existing_github_repos + github_repositories_urls_lf_energy)
-    .sort_values()
-    .unique()
-)
+cleaned_repositories_url = [
+    GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
+    for i in cleaned_repositories_url
+]
 
-repos_from_toml["dropped_targets"]["urls"] = dropped_urls
+# Adding new
+repos_from_toml["github_hosted"]["organisations"] = sorted_list_of_unique_elements(
+    new_github_orgs + github_organisations_urls_lf_energy
+)
+repos_from_toml["github_hosted"]["repositories"] = sorted_list_of_unique_elements(
+    cleaned_repositories_url
+)
+repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
+    dropped_urls
+)
 
 # Outputting to a new TOML
 doc = document()

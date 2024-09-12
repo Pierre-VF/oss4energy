@@ -30,16 +30,13 @@ organisations = [
 repositories = [
     "https://github.com/ADGEfficiency/energy-py-linear",
     "https://github.com/DrafProject/elmada",
-    "https://github.com/Energinet-DataHub/green-energy-hub#Solution-Roadmap",
+    "https://github.com/Energinet-DataHub/green-energy-hub",
     "https://github.com/OpenSynth-energy/OpenSynth",
-    "https://github.com/citrineos/citrineos/",
+    "https://github.com/citrineos/citrineos",
     "https://github.com/singularity-energy/open-grid-emissions",
     "https://github.com/slacgismo/gridlabd",
     "https://github.com/trolie/spec",
 ]
 
 [dropped_targets]
-urls = [
-    "https://github.com/orgs/PowerGridModel/discussions",
-    "https://github.com/orgs/PowerGridModel/projects/1",
-]
+urls = []
