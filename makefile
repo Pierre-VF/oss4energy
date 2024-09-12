@@ -22,3 +22,7 @@ update_list:
 run:
 	python scripts/generate_data.py
 	black .data/all_types.toml
+
+.PHONY: publish
+publish:
+	python scripts/publish_datasets.py
