@@ -9,6 +9,7 @@ import pandas as pd
 import tomllib
 from tomlkit import document, dump
 
+from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
 from oss4energy.parsers.github_data_io import (
     fetch_repositories_in_organisation,
@@ -29,7 +30,9 @@ bad_repositories = []
 
 log_info("Fetching data for all organisations in Github")
 repos_to_screen = []
-for org_url in repos_from_toml["github_hosted"]["organisations"]:
+for org_url in sorted_list_of_unique_elements(
+    repos_from_toml["github_hosted"]["organisations"]
+):
     url2check = org_url.replace("https://", "")
     if url2check.endswith("/"):
         url2check = url2check[:-1]
@@ -46,7 +49,7 @@ for org_url in repos_from_toml["github_hosted"]["organisations"]:
 
 log_info("Fetching data for all repositories in Github")
 screening_results = []
-for i in repos_to_screen:
+for i in sorted_list_of_unique_elements(repos_to_screen):
     try:
         if i.endswith("/.github"):
             continue
@@ -83,9 +86,9 @@ print(
 # Outputting details to a new TOML
 output_types = ".data/all_types.toml"  # This is to be coordinated with the makefile
 
-languages = list(df["language"].sort_values().unique())
-organisations = list(df["organisation"].sort_values().unique())
-licences = list(df["license"].sort_values().unique())
+languages = sorted_list_of_unique_elements(df["language"])
+organisations = sorted_list_of_unique_elements(df["organisation"])
+licences = sorted_list_of_unique_elements(df["license"])
 
 # TOML formatting
 doc = document()
