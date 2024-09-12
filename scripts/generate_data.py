@@ -65,7 +65,9 @@ df.set_index("id", inplace=True)
 
 def _f_readme(x):
     y = fetch_repository_readme(x)
-    y = y.replace("\n", " ; ")
+    newline_marker = ""
+    y = y.replace("\n", newline_marker)
+    y = y.replace("\r", newline_marker)
     return y[:1000]
 
 
