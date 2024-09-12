@@ -4,6 +4,21 @@
 
 Other mapping initiatives that you may want to consider looking at:
 - https://landscape.lfenergy.org/
+- https://opensustain.tech/
+
+
+## What is the vision of this project, is it just yet another listing?
+
+The vision is that this project should provide a list of open-source software for energy applications, which also provides insight on the following aspects, which are key to the success of open-source usage:
+
+- maintenance
+- security
+- tech stack
+- context data (who uses it, maintains it, ...)
+
+All of this should be provided in a way that makes it easy to search and interface to (e.g. with a structured machine-readable registry).
+
+However, in the current stage it is indeed not providing all of these features yet. Help is appreciated to get there (see [open issues](https://github.com/Pierre-VF/oss4energy/issues)).
 
 
 ## Installation
