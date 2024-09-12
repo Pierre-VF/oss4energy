@@ -15,10 +15,10 @@ build:
 
 .PHONY: update_list
 update_list:
-	python script_generate_index.py
+	python scripts/generate_index.py
 	black repo_index.toml
 
 .PHONY: run
 run:
-	python script_generate_data.py
+	python scripts/generate_data.py
 	black .data/all_types.toml
