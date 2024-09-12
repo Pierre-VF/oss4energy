@@ -38,7 +38,9 @@ def _cached_web_get(
                 out = r.text
         save_to_database(url, out, is_json=is_json)
         if wait_after_web_query:
-            time.sleep(0.1)  # To avoid triggering rate limits on APIs
+            time.sleep(
+                0.1
+            )  # To avoid triggering rate limits on APIs and be nice to servers
     else:
         log_info(f"Cache-loading: {url}")
     return out

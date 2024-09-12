@@ -1,5 +1,3 @@
-import time
-
 import tomllib
 from tomlkit import document, dump
 
@@ -31,14 +29,12 @@ github_repositories_urls_lf_energy = []
 unknowns_lf_energy = []
 rs0 = fetch_all_project_urls_from_lfe_webpage()
 for r in rs0:
-    print(f"Indexing: {r}")
     orgs_r, repos_r, unknown_r = (
         fetch_project_github_urls_from_lfe_energy_project_webpage(r)
     )
     github_organisations_urls_lf_energy += orgs_r
     github_repositories_urls_lf_energy += repos_r
     unknowns_lf_energy += unknown_r
-    time.sleep(0.5)  # To avoid being blacklisted
 
 # From landscape
 github_repositories_urls, other_repos_urls = (
