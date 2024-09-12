@@ -1,6 +1,6 @@
 # Listing of open-source for energy applications
 
-(This is a work in progress)
+(This is a work in progress - the resulting index will be published when available, so please keep an eye on this repository and tip the project about any resources that you are aware of)
 
 ## Installation
 
