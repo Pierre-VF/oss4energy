@@ -30,29 +30,32 @@ existing_github_repos = repos_from_toml["github_hosted"]["repositories"]
 log_info("Indexing LF Energy projects")
 
 # From webpage
-github_organisations_urls_lf_energy = []
-github_repositories_urls_lf_energy = []
-unknowns_lf_energy = []
+new_github_orgs = []
+new_github_repos = []
+dropped_urls = []
 rs0 = fetch_all_project_urls_from_lfe_webpage()
 for r in rs0:
     orgs_r, repos_r, unknown_r = (
         fetch_project_github_urls_from_lfe_energy_project_webpage(r)
     )
-    github_organisations_urls_lf_energy += orgs_r
-    github_repositories_urls_lf_energy += repos_r
-    unknowns_lf_energy += unknown_r
+    new_github_orgs += orgs_r
+    new_github_repos += repos_r
+    dropped_urls += unknown_r
 
 # From landscape
-github_repositories_urls, other_repos_urls = (
-    get_open_source_energy_projects_from_landscape()
-)
-
+orgs_r, repos_r, unknown_r = get_open_source_energy_projects_from_landscape()
+new_github_orgs += orgs_r
+new_github_repos += repos_r
+dropped_urls += unknown_r
 
 # Checking
-new_github_orgs, new_github_repos, dropped_urls = (
-    split_organisations_repositories_others(existing_github_orgs)
+new_github_orgs, new_github_repos, dropped_urls
+orgs_r, repos_r, unknown_r = split_organisations_repositories_others(
+    existing_github_orgs
 )
-dropped_urls += other_repos_urls  # Dropping non-Github for now
+new_github_orgs += orgs_r
+new_github_repos += repos_r
+dropped_urls += unknown_r  # Dropping non-Github for now
 
 
 # Adding from OpenSustainTech
@@ -69,17 +72,14 @@ dropped_urls += other_urls_opensustaintech
 [log_info(f"DROPPING {i} (target is unclear)") for i in dropped_urls]
 existing_github_repos += new_github_repos
 
-cleaned_repositories_url = sorted_list_of_unique_elements(
-    existing_github_repos + github_repositories_urls_lf_energy
-)
 cleaned_repositories_url = [
     GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
-    for i in cleaned_repositories_url
-] + github_repositories_urls
+    for i in sorted_list_of_unique_elements(existing_github_repos + new_github_repos)
+]
 
 # Adding new
 repos_from_toml["github_hosted"]["organisations"] = sorted_list_of_unique_elements(
-    new_github_orgs + github_organisations_urls_lf_energy
+    existing_github_orgs + new_github_orgs
 )
 repos_from_toml["github_hosted"]["repositories"] = sorted_list_of_unique_elements(
     cleaned_repositories_url

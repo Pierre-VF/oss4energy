@@ -5,9 +5,11 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.parsers import cached_web_get_text
-from oss4energy.parsers.github_data_io import GITHUB_URL_BASE, GithubTargetType
+from oss4energy.parsers.github_data_io import (
+    GITHUB_URL_BASE,
+    split_organisations_repositories_others,
+)
 
 _PROJECT_PAGE_URL_BASE = "https://lfenergy.org/projects/"
 
@@ -37,21 +39,15 @@ def fetch_project_github_urls_from_lfe_energy_project_webpage(
         i for i in [x.get("href") for x in rs] if i.startswith(GITHUB_URL_BASE)
     ]
     github_urls = [i for i in github_urls if not i.endswith(".md")]
-    organisations = []
-    repositories = []
-    unknowns = []
-    for i in github_urls:
-        tt_i = GithubTargetType.identify(i)
-        if tt_i is GithubTargetType.ORGANISATION:
-            organisations.append(i)
-        elif tt_i is GithubTargetType.REPOSITORY:
-            repositories.append(i)
-        else:
-            unknowns.append(i)
+    organisations, repositories, unknowns = split_organisations_repositories_others(
+        github_urls
+    )
     return organisations, repositories, unknowns
 
 
-def get_open_source_energy_projects_from_landscape() -> tuple[list[str], list[str]]:
+def get_open_source_energy_projects_from_landscape() -> (
+    tuple[list[str], list[str], list[str]]
+):
     r = cached_web_get_text(
         "https://raw.githubusercontent.com/lf-energy/lfenergy-landscape/main/landscape.yml"
     )
@@ -67,24 +63,15 @@ def get_open_source_energy_projects_from_landscape() -> tuple[list[str], list[st
     repos = []
     for x in _list_if_exists(out, "landscape"):
         for sc in _list_if_exists(x, "subcategories"):
-            # for ssc in _list_if_exists(sc, "subcategories"):
             for i in _list_if_exists(sc, "items"):
                 repo_url = i.get("repo_url")
                 if repo_url:
                     repos.append(repo_url)
 
-    github_repos = [
-        i
-        for i in sorted_list_of_unique_elements(repos)
-        if i.startswith(GITHUB_URL_BASE)
-    ]
-    other_repos = [
-        i
-        for i in sorted_list_of_unique_elements(repos)
-        if not i.startswith(GITHUB_URL_BASE)
-    ]
-
-    return github_repos, other_repos
+    organisations, repositories, unknowns = split_organisations_repositories_others(
+        repos
+    )
+    return organisations, repositories, unknowns
 
 
 if __name__ == "__main__":
