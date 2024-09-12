@@ -8,7 +8,7 @@ The raw datasets are published here (nice layout has not been made yet):
 - [Listing as CSV](https://data.pierrevf.consulting/oss4energy/listing_data.csv)
 
 
-Other mapping initiatives that you may want to consider looking at:
+Other mapping initiatives that you may want to consider looking at (all the repositories that these linked to have been indexed here):
 
 - https://landscape.lfenergy.org/
 - https://opensustain.tech/
