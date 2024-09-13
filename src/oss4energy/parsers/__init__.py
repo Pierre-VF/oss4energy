@@ -71,25 +71,32 @@ def cached_web_get_text(
 
 
 @dataclass
-class ParsingTargetSet:
+class ParsingTargets:
+    """
+    Class to make aggregation of parsings across targets easier to manage and work with
+    """
+
     github_repositories: list[str] = field(default_factory=[])
     github_organisations: list[str] = field(default_factory=[])
     unknown: list[str] = field(default_factory=[])
 
-    def __add__(self, other: "ParsingTargetSet") -> "ParsingTargetSet":
-        return ParsingTargetSet(
+    def __add__(self, other: "ParsingTargets") -> "ParsingTargets":
+        return ParsingTargets(
             github_organisations=self.github_organisations + other.github_organisations,
             github_repositories=self.github_repositories + other.github_repositories,
             unknown=self.unknown + other.unknown,
         )
 
-    def __iadd__(self, other: "ParsingTargetSet") -> "ParsingTargetSet":
+    def __iadd__(self, other: "ParsingTargets") -> "ParsingTargets":
         self.github_repositories += other.github_repositories
         self.github_organisations += other.github_organisations
         self.unknown += other.unknown
         return self
 
     def ensure_sorted_and_unique_elements(self) -> None:
+        """
+        Sorts all fields alphabetically and ensures that there is no redundancies in them
+        """
         self.github_repositories = sorted_list_of_unique_elements(
             self.github_repositories
         )

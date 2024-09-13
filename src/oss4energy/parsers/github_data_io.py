@@ -6,7 +6,7 @@ from oss4energy.config import SETTINGS
 from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
 from oss4energy.parsers import (
-    ParsingTargetSet,
+    ParsingTargets,
     cached_web_get_json,
     cached_web_get_text,
 )
@@ -47,7 +47,7 @@ class GithubTargetType(Enum):
 
 def split_across_target_sets(
     x: list[str],
-) -> ParsingTargetSet:
+) -> ParsingTargets:
     orgs = []
     repos = []
     others = []
@@ -59,7 +59,7 @@ def split_across_target_sets(
             repos.append(i)
         else:
             others.append(i)
-    return ParsingTargetSet(
+    return ParsingTargets(
         github_organisations=orgs, github_repositories=repos, unknown=others
     )
 

@@ -4,14 +4,14 @@ Module parsing https://opensustain.tech/
 
 from bs4 import BeautifulSoup
 
-from oss4energy.parsers import ParsingTargetSet, cached_web_get_text
+from oss4energy.parsers import ParsingTargets, cached_web_get_text
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
     split_across_target_sets,
 )
 
 
-def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargetSet:
+def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
     r_text = cached_web_get_text("https://opensustain.tech/")
     b = BeautifulSoup(r_text, features="html.parser")
 

@@ -5,7 +5,7 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.parsers import ParsingTargetSet, cached_web_get_text
+from oss4energy.parsers import ParsingTargets, cached_web_get_text
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
     split_across_target_sets,
@@ -28,7 +28,7 @@ def fetch_all_project_urls_from_lfe_webpage() -> list[str]:
 
 def fetch_project_github_urls_from_lfe_energy_project_webpage(
     project_url: str,
-) -> ParsingTargetSet:
+) -> ParsingTargets:
     if not project_url.startswith(_PROJECT_PAGE_URL_BASE):
         raise ValueError(f"Unsupported page URL ({project_url})")
     r_text = cached_web_get_text(project_url)
@@ -42,7 +42,7 @@ def fetch_project_github_urls_from_lfe_energy_project_webpage(
     return split_across_target_sets(github_urls)
 
 
-def get_open_source_energy_projects_from_landscape() -> ParsingTargetSet:
+def get_open_source_energy_projects_from_landscape() -> ParsingTargets:
     r = cached_web_get_text(
         "https://raw.githubusercontent.com/lf-energy/lfenergy-landscape/main/landscape.yml"
     )

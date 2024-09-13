@@ -12,7 +12,7 @@ from tomlkit import document, dump
 from oss4energy.config import SETTINGS
 from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
-from oss4energy.parsers import ParsingTargetSet
+from oss4energy.parsers import ParsingTargets
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
     extract_organisation_and_repository_as_url_block,
@@ -48,7 +48,7 @@ def discover_projects():
     with open(file_in, "rb") as f:
         repos_from_toml = tomllib.load(f)
 
-    existing_targets = ParsingTargetSet(
+    existing_targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
     )
@@ -56,7 +56,7 @@ def discover_projects():
     log_info("Indexing LF Energy projects")
 
     # From webpage
-    new_targets = ParsingTargetSet()
+    new_targets = ParsingTargets()
     dropped_urls = []
     rs0 = fetch_all_project_urls_from_lfe_webpage()
     for r in rs0:

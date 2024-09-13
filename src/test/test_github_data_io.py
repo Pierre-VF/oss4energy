@@ -1,4 +1,4 @@
-from oss4energy.parsers import ParsingTargetSet
+from oss4energy.parsers import ParsingTargets
 from oss4energy.parsers.github_data_io import (
     ProjectDetails,
     fetch_repositories_in_organisation,
@@ -7,12 +7,12 @@ from oss4energy.parsers.github_data_io import (
 
 
 def test_parsing_target_set():
-    a = ParsingTargetSet(
+    a = ParsingTargets(
         github_organisations=["org1"],
         github_repositories=["repo1"],
         unknown=["u1"],
     )
-    b = ParsingTargetSet(
+    b = ParsingTargets(
         github_organisations=["org2"],
         github_repositories=["repo2"],
         unknown=["u2"],
@@ -30,7 +30,7 @@ def test_parsing_target_set():
     assert a.unknown == ["u1", "u2"]
 
     # Testing cleanup of redundancies
-    x = ParsingTargetSet(
+    x = ParsingTargets(
         github_organisations=["2", "1"],
         github_repositories=["4", "3"],
         unknown=["6", "5"],
