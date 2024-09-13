@@ -5,7 +5,11 @@ from functools import lru_cache
 from oss4energy.config import SETTINGS
 from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
-from oss4energy.parsers import cached_web_get_json, cached_web_get_text
+from oss4energy.parsers import (
+    ParsingTargetSet,
+    cached_web_get_json,
+    cached_web_get_text,
+)
 
 GITHUB_URL_BASE = "https://github.com/"
 
@@ -41,9 +45,9 @@ class GithubTargetType(Enum):
             return GithubTargetType.UNKNOWN
 
 
-def split_organisations_repositories_others(
+def split_across_target_sets(
     x: list[str],
-) -> tuple[list[str], list[str], list[str]]:
+) -> ParsingTargetSet:
     orgs = []
     repos = []
     others = []
@@ -55,7 +59,9 @@ def split_organisations_repositories_others(
             repos.append(i)
         else:
             others.append(i)
-    return orgs, repos, others
+    return ParsingTargetSet(
+        github_organisations=orgs, github_repositories=repos, unknown=others
+    )
 
 
 @lru_cache(maxsize=1)
