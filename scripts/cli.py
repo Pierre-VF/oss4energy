@@ -4,6 +4,8 @@ CLI module
 
 import typer
 
+from oss4energy import scripts
+
 app = typer.Typer()
 
 
@@ -17,21 +19,27 @@ def add(url: str):
 
 
 @app.command()
-def index():
+def format():
+    """Formats I/O files"""
+    scripts.format_files()
+
+
+@app.command()
+def discover():
     """Generates an index"""
-    pass
+    scripts.discover_projects()
 
 
 @app.command()
 def publish():
     """Publishes the data to an online FTP"""
-    pass
+    scripts.publish_to_ftp()
 
 
 @app.command()
-def generate():
+def generate_listing():
     """Generates the updated listing"""
-    pass
+    scripts.generate_listing()
 
 
 if __name__ == "__main__":
