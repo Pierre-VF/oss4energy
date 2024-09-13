@@ -26,3 +26,7 @@ run:
 .PHONY: publish
 publish:
 	python scripts/publish_datasets.py
+
+.PHONY: help
+help:
+	typer scripts/cli.py run --help
