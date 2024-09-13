@@ -12,13 +12,13 @@ from tomlkit import document, dump
 from oss4energy.config import SETTINGS
 from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
+from oss4energy.parsers import ParsingTargets
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
     extract_organisation_and_repository_as_url_block,
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
-    split_organisations_repositories_others,
 )
 from oss4energy.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -47,69 +47,42 @@ def discover_projects():
     with open(file_in, "rb") as f:
         repos_from_toml = tomllib.load(f)
 
-    existing_github_orgs = repos_from_toml["github_hosted"]["organisations"]
-    existing_github_repos = repos_from_toml["github_hosted"]["repositories"]
+    existing_targets = ParsingTargets(
+        github_organisations=repos_from_toml["github_hosted"]["organisations"],
+        github_repositories=repos_from_toml["github_hosted"]["repositories"],
+    )
 
     log_info("Indexing LF Energy projects")
 
     # From webpage
-    new_github_orgs = []
-    new_github_repos = []
+    new_targets = ParsingTargets()
     dropped_urls = []
     rs0 = fetch_all_project_urls_from_lfe_webpage()
     for r in rs0:
-        orgs_r, repos_r, unknown_r = (
-            fetch_project_github_urls_from_lfe_energy_project_webpage(r)
-        )
-        new_github_orgs += orgs_r
-        new_github_repos += repos_r
-        dropped_urls += unknown_r
+        new_targets += fetch_project_github_urls_from_lfe_energy_project_webpage(r)
 
     # From landscape
-    orgs_r, repos_r, unknown_r = get_open_source_energy_projects_from_landscape()
-    new_github_orgs += orgs_r
-    new_github_repos += repos_r
-    dropped_urls += unknown_r
-
-    # Checking
-    new_github_orgs, new_github_repos, dropped_urls
-    orgs_r, repos_r, unknown_r = split_organisations_repositories_others(
-        existing_github_orgs
-    )
-    new_github_orgs += orgs_r
-    new_github_repos += repos_r
-    dropped_urls += unknown_r  # Dropping non-Github for now
+    new_targets += get_open_source_energy_projects_from_landscape()
 
     # Adding from OpenSustainTech
-    (
-        github_orgs_urls_opensustaintech,
-        github_repos_urls_opensustaintech,
-        other_urls_opensustaintech,
-    ) = fetch_all_project_urls_from_opensustain_webpage()
-    new_github_orgs += github_orgs_urls_opensustaintech
-    new_github_repos += github_repos_urls_opensustaintech
-    dropped_urls += other_urls_opensustaintech
+    new_targets += fetch_all_project_urls_from_opensustain_webpage()
 
     [log_info(f"DROPPING {i} (target is unclear)") for i in dropped_urls]
-    existing_github_repos += new_github_repos
+
+    # Mixing existing and new targets
+    new_targets += existing_targets
 
     cleaned_repositories_url = [
         GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
-        for i in sorted_list_of_unique_elements(
-            existing_github_repos + new_github_repos
-        )
+        for i in new_targets.github_repositories
     ]
+    new_targets.github_repositories = cleaned_repositories_url
+    new_targets.ensure_sorted_and_unique_elements()
 
     # Adding new
-    repos_from_toml["github_hosted"]["organisations"] = sorted_list_of_unique_elements(
-        existing_github_orgs + new_github_orgs
-    )
-    repos_from_toml["github_hosted"]["repositories"] = sorted_list_of_unique_elements(
-        cleaned_repositories_url
-    )
-    repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
-        dropped_urls
-    )
+    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
+    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
+    repos_from_toml["dropped_targets"]["urls"] = new_targets.unknown
 
     # Outputting to a new TOML
     doc = document()
@@ -140,11 +113,14 @@ def generate_listing():
     bad_organisations = []
     bad_repositories = []
 
-    organisations_to_screen = repos_from_toml["github_hosted"]["organisations"]
-    repos_to_screen = repos_from_toml["github_hosted"]["repositories"]
+    targets = ParsingTargets(
+        github_organisations=repos_from_toml["github_hosted"]["organisations"],
+        github_repositories=repos_from_toml["github_hosted"]["repositories"],
+    )
+    targets.ensure_sorted_and_unique_elements()
 
     log_info("Fetching data for all organisations in Github")
-    for org_url in sorted_list_of_unique_elements(organisations_to_screen):
+    for org_url in targets.github_organisations:
         url2check = org_url.replace("https://", "")
         if url2check.endswith("/"):
             url2check = url2check[:-1]
@@ -154,14 +130,15 @@ def generate_listing():
 
         try:
             x = fetch_repositories_in_organisation(org_url)
-            [repos_to_screen.append(i) for i in x.values()]
+            [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
             print(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
     log_info("Fetching data for all repositories in Github")
+    targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
-    for i in sorted_list_of_unique_elements(repos_to_screen):
+    for i in targets.github_repositories:
         try:
             if i.endswith("/.github"):
                 continue

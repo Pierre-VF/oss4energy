@@ -5,10 +5,10 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.parsers import cached_web_get_text
+from oss4energy.parsers import ParsingTargets, cached_web_get_text
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
-    split_organisations_repositories_others,
+    split_across_target_sets,
 )
 
 _PROJECT_PAGE_URL_BASE = "https://lfenergy.org/projects/"
@@ -28,7 +28,7 @@ def fetch_all_project_urls_from_lfe_webpage() -> list[str]:
 
 def fetch_project_github_urls_from_lfe_energy_project_webpage(
     project_url: str,
-) -> tuple[list[str], list[str], list[str]]:
+) -> ParsingTargets:
     if not project_url.startswith(_PROJECT_PAGE_URL_BASE):
         raise ValueError(f"Unsupported page URL ({project_url})")
     r_text = cached_web_get_text(project_url)
@@ -39,15 +39,10 @@ def fetch_project_github_urls_from_lfe_energy_project_webpage(
         i for i in [x.get("href") for x in rs] if i.startswith(GITHUB_URL_BASE)
     ]
     github_urls = [i for i in github_urls if not i.endswith(".md")]
-    organisations, repositories, unknowns = split_organisations_repositories_others(
-        github_urls
-    )
-    return organisations, repositories, unknowns
+    return split_across_target_sets(github_urls)
 
 
-def get_open_source_energy_projects_from_landscape() -> (
-    tuple[list[str], list[str], list[str]]
-):
+def get_open_source_energy_projects_from_landscape() -> ParsingTargets:
     r = cached_web_get_text(
         "https://raw.githubusercontent.com/lf-energy/lfenergy-landscape/main/landscape.yml"
     )
@@ -68,12 +63,4 @@ def get_open_source_energy_projects_from_landscape() -> (
                 if repo_url:
                     repos.append(repo_url)
 
-    organisations, repositories, unknowns = split_organisations_repositories_others(
-        repos
-    )
-    return organisations, repositories, unknowns
-
-
-if __name__ == "__main__":
-    r = get_open_source_energy_projects_from_landscape()
-    print(r)
+    return split_across_target_sets(repos)

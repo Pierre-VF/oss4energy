@@ -3,10 +3,12 @@ Module for parsers and web I/O
 """
 
 import time
+from dataclasses import dataclass, field
 
 import requests
 
 from oss4energy.database import load_from_database, save_to_database
+from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
 
 WEB_SESSION = requests.Session()
@@ -66,3 +68,39 @@ def cached_web_get_text(
         wait_after_web_query=wait_after_web_query,
         is_json=False,
     )
+
+
+@dataclass
+class ParsingTargets:
+    """
+    Class to make aggregation of parsings across targets easier to manage and work with
+    """
+
+    github_repositories: list[str] = field(default_factory=list)
+    github_organisations: list[str] = field(default_factory=list)
+    unknown: list[str] = field(default_factory=list)
+
+    def __add__(self, other: "ParsingTargets") -> "ParsingTargets":
+        return ParsingTargets(
+            github_organisations=self.github_organisations + other.github_organisations,
+            github_repositories=self.github_repositories + other.github_repositories,
+            unknown=self.unknown + other.unknown,
+        )
+
+    def __iadd__(self, other: "ParsingTargets") -> "ParsingTargets":
+        self.github_repositories += other.github_repositories
+        self.github_organisations += other.github_organisations
+        self.unknown += other.unknown
+        return self
+
+    def ensure_sorted_and_unique_elements(self) -> None:
+        """
+        Sorts all fields alphabetically and ensures that there is no redundancies in them
+        """
+        self.github_repositories = sorted_list_of_unique_elements(
+            self.github_repositories
+        )
+        self.github_organisations = sorted_list_of_unique_elements(
+            self.github_organisations
+        )
+        self.unknown = sorted_list_of_unique_elements(self.unknown)

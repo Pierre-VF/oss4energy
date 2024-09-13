@@ -2,10 +2,16 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 
+from requests import HTTPError
+
 from oss4energy.config import SETTINGS
 from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
-from oss4energy.parsers import cached_web_get_json, cached_web_get_text
+from oss4energy.parsers import (
+    ParsingTargets,
+    cached_web_get_json,
+    cached_web_get_text,
+)
 
 GITHUB_URL_BASE = "https://github.com/"
 
@@ -41,9 +47,9 @@ class GithubTargetType(Enum):
             return GithubTargetType.UNKNOWN
 
 
-def split_organisations_repositories_others(
+def split_across_target_sets(
     x: list[str],
-) -> tuple[list[str], list[str], list[str]]:
+) -> ParsingTargets:
     orgs = []
     repos = []
     others = []
@@ -55,7 +61,9 @@ def split_organisations_repositories_others(
             repos.append(i)
         else:
             others.append(i)
-    return orgs, repos, others
+    return ParsingTargets(
+        github_organisations=orgs, github_repositories=repos, unknown=others
+    )
 
 
 @lru_cache(maxsize=1)
@@ -100,6 +108,24 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
     r = web_get(f"https://api.github.com/repos/{repo_path}")
 
+    # Gather extra metadata
+    try:
+        r_last_commit_to_master = web_get(
+            f"https://api.github.com/repos/{repo_path}/commits/main"
+        )
+    except HTTPError:
+        # Sometimes the main branch is called "master" in older repos
+        r_last_commit_to_master = web_get(
+            f"https://api.github.com/repos/{repo_path}/commits/master"
+        )
+
+    r_pull_requests = web_get(f"https://api.github.com/repos/{repo_path}/pulls")
+
+    last_commit = datetime.fromisoformat(
+        r_last_commit_to_master["commit"]["author"]["date"]
+    )
+    n_open_pull_requests = len([i for i in r_pull_requests if i["state"] == "open"])
+
     organisation = repo_path.split("/")[0]
 
     license = r["license"]
@@ -116,6 +142,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         license=license,
         language=r["language"],
         latest_update=datetime.fromisoformat(r["updated_at"]),
+        last_commit=last_commit,
+        open_pull_requests=n_open_pull_requests,
         raw_details=r,
     )
     return details
@@ -133,3 +161,8 @@ def fetch_repository_readme(repository_url: str) -> str | None:
         md_content = f"ERROR with README.md ({e})"
 
     return md_content
+
+
+if __name__ == "__main__":
+    r = fetch_repository_details("https://github.com/wattcarbon/WEATS")
+    print("Done")

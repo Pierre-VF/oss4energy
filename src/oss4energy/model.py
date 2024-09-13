@@ -18,4 +18,6 @@ class ProjectDetails(BaseModel):
     license: Optional[str]
     latest_update: datetime
     language: Optional[str]
+    last_commit: datetime | None
+    open_pull_requests: int
     raw_details: Optional[dict]
