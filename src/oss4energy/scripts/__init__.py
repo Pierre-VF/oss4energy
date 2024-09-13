@@ -231,14 +231,19 @@ def generate_listing():
 
 
 def publish_to_ftp():
-    assert SETTINGS.EXPORT_FTP_URL is not None, "URL must be defined for this to work"
-    assert (
-        SETTINGS.EXPORT_FTP_USER is not None
-    ), "Username must be defined for this to work"
-    assert (
-        SETTINGS.EXPORT_FTP_PASSWORD is not None
-    ), "Password must be defined for this to work"
-
+    for i in [
+        SETTINGS.EXPORT_FTP_URL,
+        SETTINGS.EXPORT_FTP_USER,
+        SETTINGS.EXPORT_FTP_PASSWORD,
+    ]:
+        if i is None:
+            raise EnvironmentError(
+                f"{i.__name__} must be defined for FTP export to work"
+            )
+        if len(i) == 0:
+            raise EnvironmentError(
+                f"{i.__name__} must have an adequate value for FTP export to work"
+            )
     files_out = [
         FILE_OUTPUT_SUMMARY_TOML,
         FILE_OUTPUT_LISTING_CSV,

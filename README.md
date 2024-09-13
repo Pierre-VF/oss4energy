@@ -32,10 +32,15 @@ However, in the current stage it is indeed not providing all of these features y
 
 The installation is straightforward if you are used to Python.
 
-Create a virtual environment with Python 3.12 (the code is not tested for previous versions).
 
-Then install the package:
-> pip install .
+You have 2 options:
+
+1. Simple installation:
+    Create a virtual environment with Python 3.12 (the code is not tested for previous versions). Then install the package:
+    > pip install .
+
+2. Development-oriented installation (with Poetry), which only works on Unix systems. Run the makefile command:
+    > make install
 
 It is highly recommended to operate with a Github token (which you can create [here](https://github.com/settings/tokens/new)) 
 in order to avoid being blocked by Github's rate limit on the API. These are much lower for unauthenticated accounts.
@@ -50,6 +55,11 @@ GITHUB_API_TOKEN="...[add your token here]..."
 
 # You can adjust the position of the cache database here (leave to default if you don't need adjustment)
 SQLITE_DB=".data/db.sqlite"
+
+# If you want to enable publication of the data to FTP, you can also set these variables
+EXPORT_FTP_URL=""
+EXPORT_FTP_USER=""
+EXPORT_FTP_PASSWORD=""
 ```
 
 ## Running the code
@@ -60,6 +70,8 @@ Once you have completed the steps above, you can run the following commands (onl
     > make generate_listing
 - To refresh the list of targets to be scraped:
     > make discover
+- To export the datasets to FTP (using the credentials from the environment):
+    > make publish
 
 Note: the indexing is heavy and involves a series of web (and API) calls. A caching mechanism is therefore added in the implementation of the requests (with a simple SQLite database). This means that you might potentially end with a large file stored locally on your disk (though currently still under 50 Mb). 
 
