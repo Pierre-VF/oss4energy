@@ -3,7 +3,7 @@ Module for parsers and web I/O
 """
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import requests
 
@@ -72,9 +72,9 @@ def cached_web_get_text(
 
 @dataclass
 class ParsingTargetSet:
-    github_repositories: list = []
-    github_organisations: list = []
-    unknown: list = []
+    github_repositories: list[str] = field(default_factory=[])
+    github_organisations: list[str] = field(default_factory=[])
+    unknown: list[str] = field(default_factory=[])
 
     def __add__(self, other: "ParsingTargetSet") -> "ParsingTargetSet":
         return ParsingTargetSet(
@@ -83,10 +83,11 @@ class ParsingTargetSet:
             unknown=self.unknown + other.unknown,
         )
 
-    def __iadd__(self, other: "ParsingTargetSet") -> None:
+    def __iadd__(self, other: "ParsingTargetSet") -> "ParsingTargetSet":
         self.github_repositories += other.github_repositories
         self.github_organisations += other.github_organisations
         self.unknown += other.unknown
+        return self
 
     def ensure_sorted_and_unique_elements(self) -> None:
         self.github_repositories = sorted_list_of_unique_elements(
