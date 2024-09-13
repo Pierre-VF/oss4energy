@@ -20,7 +20,8 @@ discover:
 
 .PHONY: generate_listing
 generate_listing:
-	typer scripts/cli.py run generate_listing	
+	# Note: typer processes "_" as "-"
+	typer scripts/cli.py run generate-listing	
 	typer scripts/cli.py run format
 
 .PHONY: publish
