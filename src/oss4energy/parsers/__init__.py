@@ -76,9 +76,9 @@ class ParsingTargets:
     Class to make aggregation of parsings across targets easier to manage and work with
     """
 
-    github_repositories: list[str] = field(default_factory=[])
-    github_organisations: list[str] = field(default_factory=[])
-    unknown: list[str] = field(default_factory=[])
+    github_repositories: list[str] = field(default_factory=list)
+    github_organisations: list[str] = field(default_factory=list)
+    unknown: list[str] = field(default_factory=list)
 
     def __add__(self, other: "ParsingTargets") -> "ParsingTargets":
         return ParsingTargets(

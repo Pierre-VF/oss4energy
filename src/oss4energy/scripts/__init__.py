@@ -19,7 +19,6 @@ from oss4energy.parsers.github_data_io import (
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
-    split_across_target_sets,
 )
 from oss4energy.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -72,16 +71,17 @@ def discover_projects():
 
     # Mixing existing and new targets
     new_targets += existing_targets
-    new_targets.ensure_sorted_and_unique_elements()
 
     cleaned_repositories_url = [
         GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
         for i in new_targets.github_repositories
     ]
+    new_targets.github_repositories = cleaned_repositories_url
+    new_targets.ensure_sorted_and_unique_elements()
 
     # Adding new
     repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
-    repos_from_toml["github_hosted"]["repositories"] = cleaned_repositories_url
+    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
     repos_from_toml["dropped_targets"]["urls"] = new_targets.unknown
 
     # Outputting to a new TOML
@@ -113,11 +113,14 @@ def generate_listing():
     bad_organisations = []
     bad_repositories = []
 
-    organisations_to_screen = repos_from_toml["github_hosted"]["organisations"]
-    repos_to_screen = repos_from_toml["github_hosted"]["repositories"]
+    targets = ParsingTargets(
+        github_organisations=repos_from_toml["github_hosted"]["organisations"],
+        github_repositories=repos_from_toml["github_hosted"]["repositories"],
+    )
+    targets.ensure_sorted_and_unique_elements()
 
     log_info("Fetching data for all organisations in Github")
-    for org_url in sorted_list_of_unique_elements(organisations_to_screen):
+    for org_url in targets.github_organisations:
         url2check = org_url.replace("https://", "")
         if url2check.endswith("/"):
             url2check = url2check[:-1]
@@ -127,14 +130,15 @@ def generate_listing():
 
         try:
             x = fetch_repositories_in_organisation(org_url)
-            [repos_to_screen.append(i) for i in x.values()]
+            [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
             print(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
     log_info("Fetching data for all repositories in Github")
+    targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
-    for i in sorted_list_of_unique_elements(repos_to_screen):
+    for i in targets.github_repositories:
         try:
             if i.endswith("/.github"):
                 continue
