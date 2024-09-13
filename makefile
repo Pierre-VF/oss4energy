@@ -13,16 +13,21 @@ install:
 build:
 	poetry lock
 
-.PHONY: update_list
-update_list:
-	python scripts/generate_index.py
-	black repo_index.toml
+.PHONY: discover
+discover:
+	typer scripts/cli.py run discover	
+	typer scripts/cli.py run format
 
-.PHONY: run
-run:
-	python scripts/generate_data.py
-	black .data/summary.toml
+.PHONY: generate_listing
+generate_listing:
+	# Note: typer processes "_" as "-"
+	typer scripts/cli.py run generate-listing	
+	typer scripts/cli.py run format
 
 .PHONY: publish
 publish:
-	python scripts/publish_datasets.py
+	typer scripts/cli.py run publish
+
+.PHONY: help
+help:
+	typer scripts/cli.py run --help
