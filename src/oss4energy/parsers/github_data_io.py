@@ -2,8 +2,6 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 
-from requests import HTTPError
-
 from oss4energy.config import SETTINGS
 from oss4energy.log import log_info
 from oss4energy.model import ProjectDetails
@@ -109,21 +107,28 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     r = web_get(f"https://api.github.com/repos/{repo_path}")
 
     # Gather extra metadata
-    try:
+    r_branches = web_get(f"https://api.github.com/repos/{repo_path}/branches")
+    branches_names = [i["name"] for i in r_branches]
+    if "main" in branches_names:
+        branch2use = "main"
+    elif "master" in branches_names:
+        branch2use = "master"
+    else:
+        log_info(f"Unable to select branch among: {branches_names}")
+        branch2use = None
+
+    if branch2use is None:
+        last_commit = None
+    else:
         r_last_commit_to_master = web_get(
-            f"https://api.github.com/repos/{repo_path}/commits/main"
+            f"https://api.github.com/repos/{repo_path}/commits/{branch2use}"
         )
-    except HTTPError:
-        # Sometimes the main branch is called "master" in older repos
-        r_last_commit_to_master = web_get(
-            f"https://api.github.com/repos/{repo_path}/commits/master"
+        last_commit = datetime.fromisoformat(
+            r_last_commit_to_master["commit"]["author"]["date"]
         )
 
     r_pull_requests = web_get(f"https://api.github.com/repos/{repo_path}/pulls")
 
-    last_commit = datetime.fromisoformat(
-        r_last_commit_to_master["commit"]["author"]["date"]
-    )
     n_open_pull_requests = len([i for i in r_pull_requests if i["state"] == "open"])
 
     organisation = repo_path.split("/")[0]
