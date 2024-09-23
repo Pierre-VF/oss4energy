@@ -8,6 +8,8 @@ install:
 	pipx install poetry==$(POETRY_VERSION) || echo "Poetry already installed"
 	poetry config virtualenvs.create true 
 	poetry install --all-extras --no-cache
+	python -m spacy download en_core_web_sm
+	
 
 .PHONY: build
 build:
