@@ -47,7 +47,7 @@ def format_files():
 def _add_projects_to_listing_file(
     parsing_targets: ParsingTargets,
     file_path: str = FILE_INPUT_INDEX,
-):
+) -> None:
     log_info(f"Adding projects to {file_path}")
     with open(file_path, "rb") as f:
         repos_from_toml = tomllib.load(f)
@@ -87,9 +87,7 @@ def _add_projects_to_listing_file(
     _format_individual_file(file_path)
 
 
-def discover_projects():
-    file_out = FILE_INPUT_INDEX
-
+def discover_projects(file_path: str = FILE_INPUT_INDEX):
     log_info("Indexing LF Energy projects")
 
     # From webpage
@@ -109,7 +107,7 @@ def discover_projects():
 
     _add_projects_to_listing_file(
         new_targets,
-        file_path=file_out,
+        file_path=file_path,
     )
     log_info("Done!")
 
@@ -117,7 +115,12 @@ def discover_projects():
 def add_projects_to_listing(
     project_urls: list[str],
     file_path: str = FILE_INPUT_INDEX,
-):
+) -> None:
+    """Adds projects from a list into the index file
+
+    :param project_urls: list of URLs to be added
+    :param file_path: TOML file link to be updated, defaults to FILE_INPUT_INDEX
+    """
     # Splitting URLs into targets
     new_targets = split_across_target_sets(project_urls)
 
@@ -128,15 +131,18 @@ def add_projects_to_listing(
     log_info("Done!")
 
 
-def generate_listing():
+def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
     Script to run fetching of the data from the repositories
 
     Warning: unauthenticated users have a rate limit of 60 calls per hour
     (source: https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28)
-    """
 
-    target_output_file = FILE_OUTPUT_LISTING_CSV
+
+    :param target_output_file: name of file to output results to, defaults to FILE_OUTPUT_LISTING_CSV
+    :raises ValueError: if output file type is not supported (CSV, JSON)
+    :return: /
+    """
 
     log_info("Loading organisations and repositories to be indexed")
     with open(FILE_INPUT_INDEX, "rb") as f:
@@ -237,9 +243,14 @@ def generate_listing():
         
     """
     )
+    format_files()
 
 
-def publish_to_ftp():
+def publish_to_ftp() -> None:
+    """Exports data generated to FTP (requires .env to be defined with credentials to the FTP)
+
+    :raises EnvironmentError: when the FTP credentials are not given in environment
+    """
     for i in [
         SETTINGS.EXPORT_FTP_URL,
         SETTINGS.EXPORT_FTP_USER,

@@ -20,14 +20,12 @@ build:
 
 .PHONY: discover
 discover:
-	typer scripts/cli.py run discover	
-	typer scripts/cli.py run format
+	typer scripts/cli.py run discover
 
 .PHONY: generate_listing
 generate_listing:
 	# Note: typer processes "_" as "-"
 	typer scripts/cli.py run generate-listing	
-	typer scripts/cli.py run format
 
 .PHONY: publish
 publish:
