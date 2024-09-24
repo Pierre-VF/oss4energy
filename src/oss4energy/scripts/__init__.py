@@ -84,8 +84,6 @@ def _add_projects_to_listing_file(
     # Format the file for human readability
     _format_individual_file(file_path)
 
-    log_info("Done!")
-
 
 def discover_projects():
     file_out = FILE_INPUT_INDEX
@@ -118,8 +116,6 @@ def add_projects_to_listing(
     project_urls: list[str],
     file_path: str = FILE_INPUT_INDEX,
 ):
-    log_info(f"Adding projects to {file_path}")
-
     # Splitting URLs into targets
     new_targets = split_across_target_sets(project_urls)
 
