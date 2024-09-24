@@ -78,7 +78,7 @@ def _github_headers() -> dict[str, str]:
     return headers
 
 
-def web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
+def _web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
     if with_headers:
         headers = _github_headers()
     else:
@@ -95,19 +95,15 @@ def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]
         organisation_name
     )
 
-    res = web_get(
+    res = _web_get(
         f"https://api.github.com/orgs/{organisation_name}/repos",
     )
     return {r["name"]: r["html_url"] for r in res}
 
 
-def fetch_repository_details(repo_path: str) -> ProjectDetails:
-    repo_path = extract_organisation_and_repository_as_url_block(repo_path)
-
-    r = web_get(f"https://api.github.com/repos/{repo_path}")
-
+def _master_branch_name(cleaned_repo_path: str) -> str | None:
     # Gather extra metadata
-    r_branches = web_get(f"https://api.github.com/repos/{repo_path}/branches")
+    r_branches = _web_get(f"https://api.github.com/repos/{cleaned_repo_path}/branches")
     branches_names = [i["name"] for i in r_branches]
     if "main" in branches_names:
         branch2use = "main"
@@ -116,18 +112,26 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     else:
         log_info(f"Unable to select branch among: {branches_names}")
         branch2use = None
+    return branch2use
+
+
+def fetch_repository_details(repo_path: str) -> ProjectDetails:
+    repo_path = extract_organisation_and_repository_as_url_block(repo_path)
+
+    r = _web_get(f"https://api.github.com/repos/{repo_path}")
+    branch2use = _master_branch_name(repo_path)
 
     if branch2use is None:
         last_commit = None
     else:
-        r_last_commit_to_master = web_get(
+        r_last_commit_to_master = _web_get(
             f"https://api.github.com/repos/{repo_path}/commits/{branch2use}"
         )
         last_commit = datetime.fromisoformat(
             r_last_commit_to_master["commit"]["author"]["date"]
         )
 
-    r_pull_requests = web_get(f"https://api.github.com/repos/{repo_path}/pulls")
+    r_pull_requests = _web_get(f"https://api.github.com/repos/{repo_path}/pulls")
 
     n_open_pull_requests = len([i for i in r_pull_requests if i["state"] == "open"])
 
@@ -157,7 +161,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 def fetch_repository_readme(repository_url: str) -> str | None:
     repo_name = extract_organisation_and_repository_as_url_block(repository_url)
     try:
-        md_content = web_get(
+        md_content = _web_get(
             f"https://raw.githubusercontent.com/{repo_name}/main/README.md",
             with_headers=None,
             is_json=False,
@@ -168,6 +172,23 @@ def fetch_repository_readme(repository_url: str) -> str | None:
     return md_content
 
 
+def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
+    repo_name = extract_organisation_and_repository_as_url_block(repository_url)
+    branch = _master_branch_name(repo_name)
+    if branch is None:
+        return "ERROR with file tree (unclear master branch)"
+    try:
+        r = _web_get(
+            url=f"https://api.github.com/repos/{repo_name}/git/trees/{branch}?recursive=1",
+            with_headers=None,
+            is_json=True,
+        )
+        file_tree = [i["path"] for i in r["tree"]]
+    except Exception as e:
+        file_tree = f"ERROR with file tree ({e})"
+    return file_tree
+
+
 if __name__ == "__main__":
-    r = fetch_repository_details("https://github.com/wattcarbon/WEATS")
+    r = fetch_repository_file_tree("https://github.com/Pierre-VF/oss4energy/")
     print("Done")
