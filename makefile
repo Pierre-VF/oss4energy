@@ -10,6 +10,9 @@ install:
 	poetry install --all-extras --no-cache
 	python -m spacy download en_core_web_sm
 	
+.PHONY: add
+add:
+	typer scripts/cli.py run add
 
 .PHONY: build
 build:

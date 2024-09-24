@@ -19,6 +19,7 @@ from oss4energy.parsers.github_data_io import (
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
+    split_across_target_sets,
 )
 from oss4energy.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -34,23 +35,60 @@ FILE_OUTPUT_LISTING_CSV = ".data/listing_data.csv"
 FILE_OUTPUT_SUMMARY_TOML = ".data/summary.toml"
 
 
+def _format_individual_file(file_path: str) -> None:
+    os.system(f"black {file_path}")
+
+
 def format_files():
-    os.system(f"black {FILE_INPUT_INDEX}")
-    os.system(f"black {FILE_OUTPUT_SUMMARY_TOML}")
+    _format_individual_file(FILE_INPUT_INDEX)
+    _format_individual_file(FILE_OUTPUT_SUMMARY_TOML)
 
 
-def discover_projects():
-    file_in = FILE_INPUT_INDEX
-    file_out = FILE_INPUT_INDEX
-
-    log_info(f"Loading existing index from {file_in}")
-    with open(file_in, "rb") as f:
+def _add_projects_to_listing_file(
+    parsing_targets: ParsingTargets,
+    file_path: str = FILE_INPUT_INDEX,
+):
+    log_info(f"Adding projects to {file_path}")
+    with open(file_path, "rb") as f:
         repos_from_toml = tomllib.load(f)
 
     existing_targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
     )
+    new_targets = existing_targets + parsing_targets
+
+    # Cleaning Github repositories links
+    new_targets.github_repositories = [
+        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
+        for i in new_targets.github_repositories
+    ]
+
+    # Ensuring uniqueness in new targets
+    new_targets.ensure_sorted_and_unique_elements()
+
+    # Adding new
+    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
+    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
+    repos_from_toml["dropped_targets"]["urls"] = new_targets.unknown
+
+    # Outputting to a new TOML
+    doc = document()
+    for k, v in repos_from_toml.items():
+        doc.add(k, v)
+
+    log_info(f"Exporting new index to {file_path}")
+    with open(file_path, "w") as fp:
+        dump(doc, fp, sort_keys=True)
+
+    # Format the file for human readability
+    _format_individual_file(file_path)
+
+    log_info("Done!")
+
+
+def discover_projects():
+    file_out = FILE_INPUT_INDEX
 
     log_info("Indexing LF Energy projects")
 
@@ -69,30 +107,26 @@ def discover_projects():
 
     [log_info(f"DROPPING {i} (target is unclear)") for i in dropped_urls]
 
-    # Mixing existing and new targets
-    new_targets += existing_targets
+    _add_projects_to_listing_file(
+        new_targets,
+        file_path=file_out,
+    )
+    log_info("Done!")
 
-    cleaned_repositories_url = [
-        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
-        for i in new_targets.github_repositories
-    ]
-    new_targets.github_repositories = cleaned_repositories_url
-    new_targets.ensure_sorted_and_unique_elements()
 
-    # Adding new
-    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
-    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
-    repos_from_toml["dropped_targets"]["urls"] = new_targets.unknown
+def add_projects_to_listing(
+    project_urls: list[str],
+    file_path: str = FILE_INPUT_INDEX,
+):
+    log_info(f"Adding projects to {file_path}")
 
-    # Outputting to a new TOML
-    doc = document()
-    for k, v in repos_from_toml.items():
-        doc.add(k, v)
+    # Splitting URLs into targets
+    new_targets = split_across_target_sets(project_urls)
 
-    log_info(f"Exporting new index to {file_out}")
-    with open(file_out, "w") as fp:
-        dump(doc, fp, sort_keys=True)
-
+    _add_projects_to_listing_file(
+        new_targets,
+        file_path=file_path,
+    )
     log_info("Done!")
 
 

@@ -10,12 +10,18 @@ app = typer.Typer()
 
 
 @app.command()
-def add(url: str):
+def add():
     """Adds a resource to the index
 
     :param url: URL to add to the index
     """
-    pass
+    urls_to_add = []
+    x = "?"
+    while x != "":
+        x = input("Enter URL to be added (ENTER to stop adding): ")
+        urls_to_add.append(x)
+    print(f"Adding {urls_to_add}")
+    scripts.add_projects_to_listing(urls_to_add)
 
 
 @app.command()
