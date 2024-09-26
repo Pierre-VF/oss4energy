@@ -715,6 +715,7 @@ repositories = [
     "https://github.com/Permian-Global-Research/rsi",
     "https://github.com/PerovskiteSCModelling/IonMonger",
     "https://github.com/PetervanLunteren/EcoAssist",
+    "https://github.com/Pierre-VF/Enedis-data-io",
     "https://github.com/PierrickP/multicycles",
     "https://github.com/Planheat/Planheat-Tool",
     "https://github.com/PlanktoScope/PlanktoScope",
