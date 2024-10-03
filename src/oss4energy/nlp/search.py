@@ -18,15 +18,30 @@ def _lower_str(x: str, *args, **kwargs):
 
 
 class SearchResults:
-    def __init__(self, documents: pd.DataFrame) -> None:
+    def __init__(self, documents: pd.DataFrame | str):
+        """Instantiates a result search object
+
+        :param documents: dataframe(language,description,readme,latest_update) or filename (.feather)
+        """
+        if isinstance(documents, str):
+            assert documents.endswith(
+                ".feather"
+            ), f"Only accepting .feather files (not {documents})"
+            self.__documents = pd.read_feather(documents)
+        else:
+            self.__documents = documents.copy()
+
         # Ensuring that the required columns exist
-        keys = documents.keys()
+        available_columns = self.__documents.keys()
         for i in ["language", "description", "readme", "latest_update"]:
-            assert i in keys
+            assert i in available_columns
 
-        self.__documents = documents.copy()
+        # Ensuring that given columns are in datetime format
+        self.__documents["latest_update"] = pd.to_datetime(
+            self.__documents["latest_update"]
+        )
 
-    def __reindex(self):
+    def __reindex(self) -> None:
         self.__documents = self.__documents.reset_index(drop=True)
 
     def refine_by_languages(
@@ -60,13 +75,16 @@ class SearchResults:
         self.__documents = df_i.iloc[k_selected_unique].copy()
         self.__reindex()
 
-    def order_by_relevance(self, keyword: str):
+    def order_by_relevance(self, keyword: str) -> None:
         r_tfidf = tf_idf([_lower_str(i) for i in self.__documents])
+        keyword = keyword.lower()
+        if keyword not in r_tfidf.keys():
+            raise ValueError(f"Keyword ({keyword}) not found in documents")
         ordered_results = r_tfidf[keyword].sort_values(ascending=False)
         self.__documents = self.__documents.iloc[ordered_results.index]
         self.__reindex()
 
-    def refine_by_active_in_past_year(self):
+    def refine_by_active_in_past_year(self) -> None:
         t_last = datetime.now(UTC) - timedelta(days=365)
         self.__documents = self.__documents[self.__documents["latest_update"] > t_last]
         self.__reindex()
