@@ -84,3 +84,5 @@ Note: the indexing is heavy and involves a series of web (and API) calls. A cach
 ## Need new features or found a bug?
 
 Please open an issue on the repository [here](https://github.com/Pierre-VF/oss4energy/issues).
+
+If you have a use-case that you would like to develop based upon this, or need new features, please get in touch with [PierreVF Consulting](https://www.pierrevf.consulting/) for support.

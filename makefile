@@ -8,6 +8,11 @@ install:
 	pipx install poetry==$(POETRY_VERSION) || echo "Poetry already installed"
 	poetry config virtualenvs.create true 
 	poetry install --all-extras --no-cache
+	python -m spacy download en_core_web_sm
+	
+.PHONY: add
+add:
+	typer scripts/cli.py run add
 
 .PHONY: build
 build:
@@ -15,14 +20,12 @@ build:
 
 .PHONY: discover
 discover:
-	typer scripts/cli.py run discover	
-	typer scripts/cli.py run format
+	typer scripts/cli.py run discover
 
 .PHONY: generate_listing
 generate_listing:
 	# Note: typer processes "_" as "-"
 	typer scripts/cli.py run generate-listing	
-	typer scripts/cli.py run format
 
 .PHONY: publish
 publish:

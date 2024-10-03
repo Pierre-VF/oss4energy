@@ -12,6 +12,7 @@ from tomlkit import document, dump
 from oss4energy.config import SETTINGS
 from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
+from oss4energy.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.parsers import ParsingTargets
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
@@ -19,6 +20,7 @@ from oss4energy.parsers.github_data_io import (
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
+    split_across_target_sets,
 )
 from oss4energy.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -34,24 +36,59 @@ FILE_OUTPUT_LISTING_CSV = ".data/listing_data.csv"
 FILE_OUTPUT_SUMMARY_TOML = ".data/summary.toml"
 
 
+def _format_individual_file(file_path: str) -> None:
+    os.system(f"black {file_path}")
+
+
 def format_files():
-    os.system(f"black {FILE_INPUT_INDEX}")
-    os.system(f"black {FILE_OUTPUT_SUMMARY_TOML}")
+    _format_individual_file(FILE_INPUT_INDEX)
+    _format_individual_file(FILE_OUTPUT_SUMMARY_TOML)
 
 
-def discover_projects():
-    file_in = FILE_INPUT_INDEX
-    file_out = FILE_INPUT_INDEX
-
-    log_info(f"Loading existing index from {file_in}")
-    with open(file_in, "rb") as f:
+def _add_projects_to_listing_file(
+    parsing_targets: ParsingTargets,
+    file_path: str = FILE_INPUT_INDEX,
+) -> None:
+    log_info(f"Adding projects to {file_path}")
+    with open(file_path, "rb") as f:
         repos_from_toml = tomllib.load(f)
 
     existing_targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
     )
+    new_targets = existing_targets + parsing_targets
 
+    # Cleaning Github repositories links
+    new_targets.github_repositories = [
+        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
+        for i in new_targets.github_repositories
+    ]
+
+    # Ensuring uniqueness in new targets
+    new_targets.ensure_sorted_and_unique_elements()
+
+    # Adding new
+    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
+    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
+    repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
+        new_targets.unknown + repos_from_toml["dropped_targets"]["urls"]
+    )
+
+    # Outputting to a new TOML
+    doc = document()
+    for k, v in repos_from_toml.items():
+        doc.add(k, v)
+
+    log_info(f"Exporting new index to {file_path}")
+    with open(file_path, "w") as fp:
+        dump(doc, fp, sort_keys=True)
+
+    # Format the file for human readability
+    _format_individual_file(file_path)
+
+
+def discover_projects(file_path: str = FILE_INPUT_INDEX):
     log_info("Indexing LF Energy projects")
 
     # From webpage
@@ -69,42 +106,44 @@ def discover_projects():
 
     [log_info(f"DROPPING {i} (target is unclear)") for i in dropped_urls]
 
-    # Mixing existing and new targets
-    new_targets += existing_targets
-
-    cleaned_repositories_url = [
-        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
-        for i in new_targets.github_repositories
-    ]
-    new_targets.github_repositories = cleaned_repositories_url
-    new_targets.ensure_sorted_and_unique_elements()
-
-    # Adding new
-    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
-    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
-    repos_from_toml["dropped_targets"]["urls"] = new_targets.unknown
-
-    # Outputting to a new TOML
-    doc = document()
-    for k, v in repos_from_toml.items():
-        doc.add(k, v)
-
-    log_info(f"Exporting new index to {file_out}")
-    with open(file_out, "w") as fp:
-        dump(doc, fp, sort_keys=True)
-
+    _add_projects_to_listing_file(
+        new_targets,
+        file_path=file_path,
+    )
     log_info("Done!")
 
 
-def generate_listing():
+def add_projects_to_listing(
+    project_urls: list[str],
+    file_path: str = FILE_INPUT_INDEX,
+) -> None:
+    """Adds projects from a list into the index file
+
+    :param project_urls: list of URLs to be added
+    :param file_path: TOML file link to be updated, defaults to FILE_INPUT_INDEX
+    """
+    # Splitting URLs into targets
+    new_targets = split_across_target_sets(project_urls)
+
+    _add_projects_to_listing_file(
+        new_targets,
+        file_path=file_path,
+    )
+    log_info("Done!")
+
+
+def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
     Script to run fetching of the data from the repositories
 
     Warning: unauthenticated users have a rate limit of 60 calls per hour
     (source: https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28)
-    """
 
-    target_output_file = FILE_OUTPUT_LISTING_CSV
+
+    :param target_output_file: name of file to output results to, defaults to FILE_OUTPUT_LISTING_CSV
+    :raises ValueError: if output file type is not supported (CSV, JSON)
+    :return: /
+    """
 
     log_info("Loading organisations and repositories to be indexed")
     with open(FILE_INPUT_INDEX, "rb") as f:
@@ -152,20 +191,26 @@ def generate_listing():
 
     def _f_readme(x):
         y = fetch_repository_readme(x)
-        newline_marker = ""
-        y = y.replace("\n", newline_marker)
-        y = y.replace("\r", newline_marker)
-        return y[:1000]
+        return markdown_to_clean_plaintext(y)  # [:1000]
 
     log_info("Fetching READMEs for all repositories in Github")
     df["readme"] = df["url"].apply(_f_readme)
 
+    df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
-        df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
+        df2export.to_csv(target_output_file, sep=";")
     elif target_output_file.endswith(".json"):
-        df.drop(columns=["raw_details"]).T.to_json(target_output_file)
+        df2export.T.to_json(target_output_file)
     else:
         raise ValueError(f"Unsupported file type for export: {target_output_file}")
+
+    # Exporting the file to HDF too (faster processing)
+    binary_target_output_file = target_output_file
+    for i in ["csv", "json"]:
+        binary_target_output_file = binary_target_output_file.replace(
+            f".{i}", ".feather"
+        )
+    df2export.reset_index().to_feather(binary_target_output_file)
 
     print(
         f"""
@@ -205,9 +250,14 @@ def generate_listing():
         
     """
     )
+    format_files()
 
 
-def publish_to_ftp():
+def publish_to_ftp() -> None:
+    """Exports data generated to FTP (requires .env to be defined with credentials to the FTP)
+
+    :raises EnvironmentError: when the FTP credentials are not given in environment
+    """
     for i in [
         SETTINGS.EXPORT_FTP_URL,
         SETTINGS.EXPORT_FTP_USER,
