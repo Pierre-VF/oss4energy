@@ -12,6 +12,7 @@ from tomlkit import document, dump
 from oss4energy.config import SETTINGS
 from oss4energy.helpers import sorted_list_of_unique_elements
 from oss4energy.log import log_info
+from oss4energy.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.parsers import ParsingTargets
 from oss4energy.parsers.github_data_io import (
     GITHUB_URL_BASE,
@@ -190,20 +191,23 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
 
     def _f_readme(x):
         y = fetch_repository_readme(x)
-        newline_marker = ""
-        y = y.replace("\n", newline_marker)
-        y = y.replace("\r", newline_marker)
-        return y[:1000]
+        return markdown_to_clean_plaintext(y)  # [:1000]
 
     log_info("Fetching READMEs for all repositories in Github")
     df["readme"] = df["url"].apply(_f_readme)
 
+    df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
-        df.drop(columns=["raw_details"]).to_csv(target_output_file, sep=";")
+        output_binary = target_output_file.replace(".csv", ".hdf")
+        df2export.to_csv(target_output_file, sep=";")
     elif target_output_file.endswith(".json"):
-        df.drop(columns=["raw_details"]).T.to_json(target_output_file)
+        output_binary = target_output_file.replace(".csv", ".hdf")
+        df2export.T.to_json(target_output_file)
     else:
         raise ValueError(f"Unsupported file type for export: {target_output_file}")
+
+    # Exporting the file to HDF too (faster processing)
+    df2export.to_hdf(output_binary)
 
     print(
         f"""
