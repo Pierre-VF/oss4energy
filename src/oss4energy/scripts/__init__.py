@@ -9,12 +9,12 @@ import pandas as pd
 import tomllib
 from tomlkit import document, dump
 
-from oss4energy.config import SETTINGS
-from oss4energy.helpers import sorted_list_of_unique_elements
-from oss4energy.log import log_info
-from oss4energy.nlp.markdown_io import markdown_to_clean_plaintext
-from oss4energy.parsers import ParsingTargets
-from oss4energy.parsers.github_data_io import (
+from oss4energy.src.config import SETTINGS
+from oss4energy.src.helpers import sorted_list_of_unique_elements
+from oss4energy.src.log import log_info
+from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
+from oss4energy.src.parsers import ParsingTargets
+from oss4energy.src.parsers.github_data_io import (
     GITHUB_URL_BASE,
     extract_organisation_and_repository_as_url_block,
     fetch_repositories_in_organisation,
@@ -22,12 +22,12 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_readme,
     split_across_target_sets,
 )
-from oss4energy.parsers.lfenergy import (
+from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
     fetch_project_github_urls_from_lfe_energy_project_webpage,
     get_open_source_energy_projects_from_landscape,
 )
-from oss4energy.parsers.opensustain_tech import (
+from oss4energy.src.parsers.opensustain_tech import (
     fetch_all_project_urls_from_opensustain_webpage,
 )
 

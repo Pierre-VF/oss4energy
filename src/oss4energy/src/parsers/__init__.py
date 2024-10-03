@@ -7,9 +7,9 @@ from dataclasses import dataclass, field
 
 import requests
 
-from oss4energy.database import load_from_database, save_to_database
-from oss4energy.helpers import sorted_list_of_unique_elements
-from oss4energy.log import log_info
+from oss4energy.src.database import load_from_database, save_to_database
+from oss4energy.src.helpers import sorted_list_of_unique_elements
+from oss4energy.src.log import log_info
 
 WEB_SESSION = requests.Session()
 
