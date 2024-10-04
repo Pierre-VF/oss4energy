@@ -73,6 +73,6 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          branch: "index-update/${{ github.run_id }}"
-          base: "main"
+          branch: "origin/index-update/${{ github.run_id }}"
+          base: "origin/main"
           title: "Updating index"
