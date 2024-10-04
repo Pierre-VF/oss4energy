@@ -7,7 +7,7 @@ name: Updating the data
 
 on: 
   schedule:
-    - cron: '0 25 5 ? * WED *'
+    - cron: '25 5 * * WED'
 
 jobs:
   build-and-run-discovery:
