@@ -25,9 +25,7 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: 
-        - write
-        - create
+      pull-requests: write
       contents: write
 
     concurrency:
@@ -75,6 +73,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: "index-update/${{ github.run_id }}"
           base: "main"
           title: "Updating index"
