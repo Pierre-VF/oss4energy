@@ -2,10 +2,10 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 
-from oss4energy.config import SETTINGS
-from oss4energy.log import log_info
-from oss4energy.model import ProjectDetails
-from oss4energy.parsers import (
+from oss4energy.src.config import SETTINGS
+from oss4energy.src.log import log_info
+from oss4energy.src.model import ProjectDetails
+from oss4energy.src.parsers import (
     ParsingTargets,
     cached_web_get_json,
     cached_web_get_text,

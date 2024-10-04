@@ -4,17 +4,19 @@ Module containing methods to be run in scripts
 
 import os
 from ftplib import FTP
+from urllib.request import urlretrieve
 
 import pandas as pd
 import tomllib
 from tomlkit import document, dump
 
-from oss4energy.config import SETTINGS
-from oss4energy.helpers import sorted_list_of_unique_elements
-from oss4energy.log import log_info
-from oss4energy.nlp.markdown_io import markdown_to_clean_plaintext
-from oss4energy.parsers import ParsingTargets
-from oss4energy.parsers.github_data_io import (
+from oss4energy.src.config import SETTINGS
+from oss4energy.src.helpers import sorted_list_of_unique_elements
+from oss4energy.src.log import log_info
+from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
+from oss4energy.src.nlp.search import SearchResults
+from oss4energy.src.parsers import ParsingTargets
+from oss4energy.src.parsers.github_data_io import (
     GITHUB_URL_BASE,
     extract_organisation_and_repository_as_url_block,
     fetch_repositories_in_organisation,
@@ -22,18 +24,20 @@ from oss4energy.parsers.github_data_io import (
     fetch_repository_readme,
     split_across_target_sets,
 )
-from oss4energy.parsers.lfenergy import (
+from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
     fetch_project_github_urls_from_lfe_energy_project_webpage,
     get_open_source_energy_projects_from_landscape,
 )
-from oss4energy.parsers.opensustain_tech import (
+from oss4energy.src.parsers.opensustain_tech import (
     fetch_all_project_urls_from_opensustain_webpage,
 )
 
 FILE_INPUT_INDEX = "repo_index.toml"
-FILE_OUTPUT_LISTING_CSV = ".data/listing_data.csv"
-FILE_OUTPUT_SUMMARY_TOML = ".data/summary.toml"
+FILE_OUTPUT_DIR = ".data"
+FILE_OUTPUT_LISTING_CSV = f"{FILE_OUTPUT_DIR}/listing_data.csv"
+FILE_OUTPUT_LISTING_FEATHER = f"{FILE_OUTPUT_DIR}/listing_data.feather"
+FILE_OUTPUT_SUMMARY_TOML = f"{FILE_OUTPUT_DIR}/summary.toml"
 
 
 def _format_individual_file(file_path: str) -> None:
@@ -274,6 +278,7 @@ def publish_to_ftp() -> None:
     files_out = [
         FILE_OUTPUT_SUMMARY_TOML,
         FILE_OUTPUT_LISTING_CSV,
+        FILE_OUTPUT_LISTING_FEATHER,
     ]
 
     with FTP(
@@ -290,3 +295,60 @@ def publish_to_ftp() -> None:
             with open(i, "rb") as fp:
                 log_info(f"Uploading {i}")
                 ftp.storbinary("STOR %s" % os.path.basename(i), fp, blocksize=1024)
+
+
+def search_in_listing() -> None:
+    if not os.path.exists(FILE_OUTPUT_LISTING_FEATHER):
+        raise RuntimeError(
+            "The dataset is not available locally - make sure to download it prior to running this"
+        )
+
+    x = SearchResults(FILE_OUTPUT_LISTING_FEATHER)
+    print("Initial number of documents")
+    print(x.n_documents)
+
+    msg = """
+Refine search with command: "[keyword,active,language,show,exit] value"
+>>  """
+
+    while (current_input := input(msg).lower()) != "":
+        ci_i = current_input.split(" ")
+        action_i = ci_i[0]
+        if action_i == "active":
+            print("Refining by active in past year")
+            x.refine_by_active_in_past_year()
+        elif action_i == "keyword":
+            kw = ci_i[1]
+            print(f"Refine by keyword ({kw})")
+            x.refine_by_keyword(keyword=kw)
+        elif action_i == "language":
+            kw = [i.title() for i in ci_i[1].split(",")]
+            print(f"Refine by languages ({kw})")
+            x.refine_by_languages(languages=kw)  # , include_none=True)
+        elif action_i == "show":
+            print(x.documents)
+        elif action_i == "exit":
+            print("Terminating")
+            break
+        else:
+            print(f"Invalid request ({current_input})")
+        print(f"{x.n_documents} repositories found")
+
+
+def download_data():
+    URL_BASE = "https://data.pierrevf.consulting/oss4energy"
+    URL_RAW_INDEX = f"{URL_BASE}/summary.toml"
+    URL_LISTING_CSV = f"{URL_BASE}/listing_data.csv"
+    URL_LISTING_FEATHER = f"{URL_BASE}/listing_data.feather"
+
+    os.makedirs(FILE_OUTPUT_DIR, exist_ok=True)
+    for url_i, file_i in [
+        (URL_RAW_INDEX, FILE_OUTPUT_SUMMARY_TOML),
+        (URL_LISTING_CSV, FILE_OUTPUT_LISTING_CSV),
+        (URL_LISTING_FEATHER, FILE_OUTPUT_LISTING_FEATHER),
+    ]:
+        print(f"Fetching {url_i}")
+        urlretrieve(url_i, file_i)
+        print(f"-> Downloaded to {file_i}")
+
+    print("Download complete")

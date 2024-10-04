@@ -72,8 +72,20 @@ EXPORT_FTP_PASSWORD=""
 
 Once you have completed the steps above, you can run the following commands (only valid on Unix systems):
 
+Typical use-cases:
+
+- To download the dataset:
+    > make download_data
+- To search in CLI mode (note that this is a very basic CLI):
+    > make search
+
+
+Advanced use-cases (to regenerate listings)
+
 - To generate an output dataset:
     > make generate_listing
+- To add new resources:
+    > make add
 - To refresh the list of targets to be scraped:
     > make discover
 - To export the datasets to FTP (using the credentials from the environment):

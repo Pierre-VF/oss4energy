@@ -5,8 +5,8 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.parsers import ParsingTargets, cached_web_get_text
-from oss4energy.parsers.github_data_io import (
+from oss4energy.src.parsers import ParsingTargets, cached_web_get_text
+from oss4energy.src.parsers.github_data_io import (
     GITHUB_URL_BASE,
     split_across_target_sets,
 )

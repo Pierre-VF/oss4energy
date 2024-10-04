@@ -1,5 +1,6 @@
 
 POETRY_VERSION := 1.8.3
+CLI_NAME := "oss4energy.cli"
 
 .PHONY: install
 install:
@@ -12,7 +13,7 @@ install:
 	
 .PHONY: add
 add:
-	typer scripts/cli.py run add
+	typer $(CLI_NAME) run add
 
 .PHONY: build
 build:
@@ -20,17 +21,25 @@ build:
 
 .PHONY: discover
 discover:
-	typer scripts/cli.py run discover
+	typer $(CLI_NAME) run discover
 
 .PHONY: generate_listing
 generate_listing:
 	# Note: typer processes "_" as "-"
-	typer scripts/cli.py run generate-listing	
+	typer $(CLI_NAME) run generate-listing	
 
 .PHONY: publish
 publish:
-	typer scripts/cli.py run publish
+	typer $(CLI_NAME) run publish
+
+.PHONY: search
+search:
+	typer $(CLI_NAME) run search
+
+.PHONY: download_data
+download_data:
+	typer $(CLI_NAME) run download-data
 
 .PHONY: help
 help:
-	typer scripts/cli.py run --help
+	typer $(CLI_NAME) run --help
