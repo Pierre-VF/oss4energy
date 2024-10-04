@@ -56,9 +56,3 @@ jobs:
           message: "Automatic code reformatting"
           add: "."
           push: true
-          new_branch: "index-update/${{ github.run_id }}"
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: "index-update/${{ github.run_id }}"
