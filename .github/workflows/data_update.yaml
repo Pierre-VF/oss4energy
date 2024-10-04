@@ -25,7 +25,9 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      pull-requests: 
+        - write
+        - create
       contents: write
 
     concurrency:
