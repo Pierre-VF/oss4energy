@@ -75,3 +75,4 @@ jobs:
         with:
           branch: "index-update/${{ github.run_id }}"
           base: "main"
+          title: "Updating index"
