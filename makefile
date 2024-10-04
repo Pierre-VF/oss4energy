@@ -32,6 +32,10 @@ generate_listing:
 publish:
 	typer $(CLI_NAME) run publish
 
+.PHONY: search
+search:
+	typer $(CLI_NAME) run search
+
 .PHONY: help
 help:
 	typer $(CLI_NAME) run --help

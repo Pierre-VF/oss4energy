@@ -51,5 +51,11 @@ def generate_listing():
     scripts.generate_listing()
 
 
+@app.command()
+def search():
+    """Searches in the listing"""
+    scripts.search_in_listing()
+
+
 if __name__ == "__main__":
     app()

@@ -80,6 +80,8 @@ Once you have completed the steps above, you can run the following commands (onl
     > make discover
 - To export the datasets to FTP (using the credentials from the environment):
     > make publish
+- To search in CLI mode:
+    > make search
 
 Note: the indexing is heavy and involves a series of web (and API) calls. A caching mechanism is therefore added in the implementation of the requests (with a simple SQLite database). This means that you might potentially end with a large file stored locally on your disk (currently under 500 Mb).
 

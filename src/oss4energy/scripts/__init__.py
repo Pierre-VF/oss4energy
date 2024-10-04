@@ -13,6 +13,7 @@ from oss4energy.src.config import SETTINGS
 from oss4energy.src.helpers import sorted_list_of_unique_elements
 from oss4energy.src.log import log_info
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
+from oss4energy.src.nlp.search import SearchResults
 from oss4energy.src.parsers import ParsingTargets
 from oss4energy.src.parsers.github_data_io import (
     GITHUB_URL_BASE,
@@ -33,6 +34,7 @@ from oss4energy.src.parsers.opensustain_tech import (
 
 FILE_INPUT_INDEX = "repo_index.toml"
 FILE_OUTPUT_LISTING_CSV = ".data/listing_data.csv"
+FILE_OUTPUT_LISTING_FEATHER = ".data/listing_data.feather"
 FILE_OUTPUT_SUMMARY_TOML = ".data/summary.toml"
 
 
@@ -290,3 +292,36 @@ def publish_to_ftp() -> None:
             with open(i, "rb") as fp:
                 log_info(f"Uploading {i}")
                 ftp.storbinary("STOR %s" % os.path.basename(i), fp, blocksize=1024)
+
+
+def search_in_listing() -> None:
+    x = SearchResults(FILE_OUTPUT_LISTING_FEATHER)
+    print("Initial number of documents")
+    print(x.n_documents)
+
+    msg = """
+Refine search with command: "[keyword,active,language,show,exit] value"
+>>  """
+
+    while (current_input := input(msg).lower()) != "":
+        ci_i = current_input.split(" ")
+        action_i = ci_i[0]
+        if action_i == "active":
+            print("Refining by active in past year")
+            x.refine_by_active_in_past_year()
+        elif action_i == "keyword":
+            kw = ci_i[1]
+            print(f"Refine by keyword ({kw})")
+            x.refine_by_keyword(keyword=kw)
+        elif action_i == "language":
+            kw = [i.title() for i in ci_i[1].split(",")]
+            print(f"Refine by languages ({kw})")
+            x.refine_by_languages(languages=kw)  # , include_none=True)
+        elif action_i == "show":
+            print(x.documents)
+        elif action_i == "exit":
+            print("Terminating")
+            break
+        else:
+            print(f"Invalid request ({current_input})")
+        print(f"{x.n_documents} repositories found")
