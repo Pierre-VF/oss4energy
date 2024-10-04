@@ -57,5 +57,11 @@ def search():
     scripts.search_in_listing()
 
 
+@app.command()
+def download_data():
+    """Downloads the latest listing"""
+    scripts.download_data()
+
+
 if __name__ == "__main__":
     app()

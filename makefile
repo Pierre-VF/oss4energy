@@ -36,6 +36,10 @@ publish:
 search:
 	typer $(CLI_NAME) run search
 
+.PHONY: download_data
+download_data:
+	typer $(CLI_NAME) run download-data
+
 .PHONY: help
 help:
 	typer $(CLI_NAME) run --help

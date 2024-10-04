@@ -4,6 +4,7 @@ Module containing methods to be run in scripts
 
 import os
 from ftplib import FTP
+from urllib.request import urlretrieve
 
 import pandas as pd
 import tomllib
@@ -33,9 +34,10 @@ from oss4energy.src.parsers.opensustain_tech import (
 )
 
 FILE_INPUT_INDEX = "repo_index.toml"
-FILE_OUTPUT_LISTING_CSV = ".data/listing_data.csv"
-FILE_OUTPUT_LISTING_FEATHER = ".data/listing_data.feather"
-FILE_OUTPUT_SUMMARY_TOML = ".data/summary.toml"
+FILE_OUTPUT_DIR = ".data"
+FILE_OUTPUT_LISTING_CSV = f"{FILE_OUTPUT_DIR}/listing_data.csv"
+FILE_OUTPUT_LISTING_FEATHER = f"{FILE_OUTPUT_DIR}/listing_data.feather"
+FILE_OUTPUT_SUMMARY_TOML = f"{FILE_OUTPUT_DIR}/summary.toml"
 
 
 def _format_individual_file(file_path: str) -> None:
@@ -276,6 +278,7 @@ def publish_to_ftp() -> None:
     files_out = [
         FILE_OUTPUT_SUMMARY_TOML,
         FILE_OUTPUT_LISTING_CSV,
+        FILE_OUTPUT_LISTING_FEATHER,
     ]
 
     with FTP(
@@ -325,3 +328,23 @@ Refine search with command: "[keyword,active,language,show,exit] value"
         else:
             print(f"Invalid request ({current_input})")
         print(f"{x.n_documents} repositories found")
+
+
+def download_data():
+    URL_RAW_INDEX = "https://data.pierrevf.consulting/oss4energy/summary.toml"
+    URL_LISTING_CSV = "https://data.pierrevf.consulting/oss4energy/listing_data.csv"
+    URL_LISTING_FEATHER = (
+        "https://data.pierrevf.consulting/oss4energy/listing_data.feather"
+    )
+
+    os.makedirs(FILE_OUTPUT_DIR, exist_ok=True)
+    for url_i, file_i in [
+        (URL_RAW_INDEX, FILE_OUTPUT_SUMMARY_TOML),
+        (URL_LISTING_CSV, FILE_OUTPUT_LISTING_CSV),
+        (URL_LISTING_FEATHER, FILE_OUTPUT_LISTING_FEATHER),
+    ]:
+        print(f"Fetching {url_i}")
+        urlretrieve(url_i, file_i)
+        print(f"-> Downloaded to {file_i}")
+
+    print("Download complete")
