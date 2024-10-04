@@ -74,6 +74,8 @@ Once you have completed the steps above, you can run the following commands (onl
 
 - To generate an output dataset:
     > make generate_listing
+- To add new resources:
+    > make add
 - To refresh the list of targets to be scraped:
     > make discover
 - To export the datasets to FTP (using the credentials from the environment):
