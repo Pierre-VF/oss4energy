@@ -67,12 +67,12 @@ jobs:
           author_name: github_actions
           message: "Indexing new sources"
           add: "."
-          push: true
-          new_branch: "index-update/${{ github.run_id }}"
+          #push: true
+          #new_branch: "index-update/${{ github.run_id }}"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          # branch: "origin/index-update/${{ github.run_id }}"
+          branch: "index-update/${{ github.run_id }}"
           base: "main"
           title: "Updating index"
