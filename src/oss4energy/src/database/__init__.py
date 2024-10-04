@@ -3,6 +3,7 @@ Module to manage a database input
 """
 
 import json
+import os
 from datetime import UTC, datetime
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
@@ -22,11 +23,20 @@ class Cache(SQLModel, table=True):
 # -------------------------------------------------------------------------------------
 # Engine
 # -------------------------------------------------------------------------------------
-_ENGINE = create_engine(
-    f"sqlite:///{SETTINGS.SQLITE_DB}",
-    echo=False,
-)
-SQLModel.metadata.create_all(_ENGINE)
+
+
+def _open_engine_and_create_database_if_missing():
+    db_folder, __ = os.path.split(SETTINGS.SQLITE_DB)
+    os.makedirs(db_folder, exist_ok=True)
+    x = create_engine(
+        f"sqlite:///{SETTINGS.SQLITE_DB}",
+        echo=False,
+    )
+    SQLModel.metadata.create_all(x)
+    return x
+
+
+_ENGINE = _open_engine_and_create_database_if_missing()
 
 
 # -------------------------------------------------------------------------------------
