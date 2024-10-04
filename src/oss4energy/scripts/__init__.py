@@ -298,6 +298,11 @@ def publish_to_ftp() -> None:
 
 
 def search_in_listing() -> None:
+    if not os.path.exists(FILE_OUTPUT_LISTING_FEATHER):
+        raise RuntimeError(
+            "The dataset is not available locally - make sure to download it prior to running this"
+        )
+
     x = SearchResults(FILE_OUTPUT_LISTING_FEATHER)
     print("Initial number of documents")
     print(x.n_documents)
@@ -331,11 +336,10 @@ Refine search with command: "[keyword,active,language,show,exit] value"
 
 
 def download_data():
-    URL_RAW_INDEX = "https://data.pierrevf.consulting/oss4energy/summary.toml"
-    URL_LISTING_CSV = "https://data.pierrevf.consulting/oss4energy/listing_data.csv"
-    URL_LISTING_FEATHER = (
-        "https://data.pierrevf.consulting/oss4energy/listing_data.feather"
-    )
+    URL_BASE = "https://data.pierrevf.consulting/oss4energy"
+    URL_RAW_INDEX = f"{URL_BASE}/summary.toml"
+    URL_LISTING_CSV = f"{URL_BASE}/listing_data.csv"
+    URL_LISTING_FEATHER = f"{URL_BASE}/listing_data.feather"
 
     os.makedirs(FILE_OUTPUT_DIR, exist_ok=True)
     for url_i, file_i in [
