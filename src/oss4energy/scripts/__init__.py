@@ -58,6 +58,7 @@ def _add_projects_to_listing_file(
     existing_targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
+        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
     )
     new_targets = existing_targets + parsing_targets
 
@@ -72,6 +73,7 @@ def _add_projects_to_listing_file(
     # Adding new
     repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
     repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
+    repos_from_toml["gitlab_hosted"]["repositories"] = new_targets.gitlab_repositories
     repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
         new_targets.unknown + repos_from_toml["dropped_targets"]["urls"]
     )
