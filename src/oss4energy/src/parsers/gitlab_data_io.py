@@ -113,11 +113,13 @@ class GitlabTargetType(Enum):
 
     @staticmethod
     def identify(url: str) -> "GitlabTargetType":
+        if not url.startswith(GITLAB_URL_BASE):
+            return GitlabTargetType.UNKNOWN
         processed = _extract_organisation_and_repository_as_url_block(url)
         n_slashes = processed.count("/")
         if n_slashes < 1:
             return GitlabTargetType.GROUP
-        elif n_slashes > 1:
+        elif n_slashes >= 1:
             return GitlabTargetType.REPOSITORY
         else:
             return GitlabTargetType.UNKNOWN
