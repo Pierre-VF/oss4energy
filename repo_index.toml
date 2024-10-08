@@ -2341,21 +2341,8 @@ repositories = [
     "https://github.com/zsteinmetz/envalysis",
 ]
 
-[dropped_targets]
-urls = [
-    "https://bitbucket.org/harald_g_svendsen/powergama",
-    "https://code.usgs.gov/map/gw/visGWDBmrva",
-    "https://git.geomar.de/markus-pahlow/UVic-updates-opem",
-    "https://git.iws.uni-stuttgart.de/dumux-repositories/dumux",
-    "https://git.rwth-aachen.de/acs/public/simulation/DistAIXFramework/distaix",
-    "https://git.rwth-aachen.de/isea/framework",
-    "https://git.tu-berlin.de/genesysmod/genesys-mod-public",
-    "https://git.ufz.de/mhm/mhm",
-    "https://github.com/orgs/PowerGridModel/discussions",
-    "https://github.com/orgs/PowerGridModel/projects/1",
-    "https://github.com/protontypes/AwesomeCure/tree/main/csv",
-    "https://github.com/protontypes/open-sustainable-technology/blob/main/CONTRIBUTING.md",
-    "https://github.com/protontypes/open-sustainable-technology/graphs/contributors",
+[gitlab_hosted]
+repositories = [
     "https://gitlab.awi.de/sicopolis/sicopolis",
     "https://gitlab.com/NRAP/OpenIAM",
     "https://gitlab.com/SmartGridToolbox/SmartGridToolbox",
@@ -2383,6 +2370,24 @@ urls = [
     "https://gitlab.com/wgms/glathida",
     "https://gitlab.com/wxmetvis/met.3d",
     "https://gitlab.com/xdc-model/xdc",
+]
+
+
+[dropped_targets]
+urls = [
+    "https://bitbucket.org/harald_g_svendsen/powergama",
+    "https://code.usgs.gov/map/gw/visGWDBmrva",
+    "https://git.geomar.de/markus-pahlow/UVic-updates-opem",
+    "https://git.iws.uni-stuttgart.de/dumux-repositories/dumux",
+    "https://git.rwth-aachen.de/acs/public/simulation/DistAIXFramework/distaix",
+    "https://git.rwth-aachen.de/isea/framework",
+    "https://git.tu-berlin.de/genesysmod/genesys-mod-public",
+    "https://git.ufz.de/mhm/mhm",
+    "https://github.com/orgs/PowerGridModel/discussions",
+    "https://github.com/orgs/PowerGridModel/projects/1",
+    "https://github.com/protontypes/AwesomeCure/tree/main/csv",
+    "https://github.com/protontypes/open-sustainable-technology/blob/main/CONTRIBUTING.md",
+    "https://github.com/protontypes/open-sustainable-technology/graphs/contributors",
     "https://gitlab.lrz.de/open-ees-ses/lp_opt",
     "https://gitlab.lrz.de/open-ees-ses/openbea",
     "https://gitlab.lrz.de/open-ees-ses/simses",

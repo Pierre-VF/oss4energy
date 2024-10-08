@@ -78,18 +78,21 @@ class ParsingTargets:
 
     github_repositories: list[str] = field(default_factory=list)
     github_organisations: list[str] = field(default_factory=list)
+    gitlab_repositories: list[str] = field(default_factory=list)
     unknown: list[str] = field(default_factory=list)
 
     def __add__(self, other: "ParsingTargets") -> "ParsingTargets":
         return ParsingTargets(
             github_organisations=self.github_organisations + other.github_organisations,
             github_repositories=self.github_repositories + other.github_repositories,
+            gitlab_repositories=self.gitlab_repositories + other.gitlab_repositories,
             unknown=self.unknown + other.unknown,
         )
 
     def __iadd__(self, other: "ParsingTargets") -> "ParsingTargets":
         self.github_repositories += other.github_repositories
         self.github_organisations += other.github_organisations
+        self.gitlab_repositories += other.gitlab_repositories
         self.unknown += other.unknown
         return self
 
@@ -102,5 +105,8 @@ class ParsingTargets:
         )
         self.github_organisations = sorted_list_of_unique_elements(
             self.github_organisations
+        )
+        self.gitlab_repositories = sorted_list_of_unique_elements(
+            self.gitlab_repositories
         )
         self.unknown = sorted_list_of_unique_elements(self.unknown)

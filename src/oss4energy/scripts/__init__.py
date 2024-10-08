@@ -159,6 +159,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
+        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
     )
     targets.ensure_sorted_and_unique_elements()
 
