@@ -5,11 +5,12 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.src.parsers import ParsingTargets, cached_web_get_text
-from oss4energy.src.parsers.github_data_io import (
-    GITHUB_URL_BASE,
-    split_across_target_sets,
+from oss4energy.src.parsers import (
+    ParsingTargets,
+    cached_web_get_text,
+    identify_parsing_targets,
 )
+from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
 
 _PROJECT_PAGE_URL_BASE = "https://lfenergy.org/projects/"
 
@@ -39,7 +40,7 @@ def fetch_project_github_urls_from_lfe_energy_project_webpage(
         i for i in [x.get("href") for x in rs] if i.startswith(GITHUB_URL_BASE)
     ]
     github_urls = [i for i in github_urls if not i.endswith(".md")]
-    return split_across_target_sets(github_urls)
+    return identify_parsing_targets(github_urls)
 
 
 def get_open_source_energy_projects_from_landscape() -> ParsingTargets:
@@ -63,4 +64,4 @@ def get_open_source_energy_projects_from_landscape() -> ParsingTargets:
                 if repo_url:
                     repos.append(repo_url)
 
-    return split_across_target_sets(repos)
+    return identify_parsing_targets(repos)

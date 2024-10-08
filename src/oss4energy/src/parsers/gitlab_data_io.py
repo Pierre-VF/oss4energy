@@ -1,12 +1,13 @@
 """
 Module to manage parsing of Gitlab data
 
-Note: this is based upon https://github.com/python-gitlab/python-gitlab
-
-Personal access token: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
+Note:
+- Doc: https://docs.gitlab.com/ee/api/projects.html#get-a-single-project
+- Personal access token: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
 """
 
 from datetime import datetime
+from enum import Enum
 from functools import lru_cache
 from urllib.parse import quote_plus
 
@@ -14,6 +15,7 @@ from oss4energy.src.config import SETTINGS
 from oss4energy.src.log import log_info
 from oss4energy.src.model import ProjectDetails
 from oss4energy.src.parsers import (
+    ParsingTargets,
     cached_web_get_json,
     cached_web_get_text,
 )
@@ -67,7 +69,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     r = _web_get(url, is_json=True)
 
     organisation = r["namespace"]["name"]
-    license = "?"
+    license = "?"  # TODO : need to find how to parse the licence of a project
     url_open_pr = r["_links"]["merge_requests"]
     r_open_pr = _web_get(url_open_pr, is_json=True)
     n_open_prs = len([i for i in r_open_pr if i.get("state") == "open"])
@@ -102,6 +104,44 @@ def fetch_repository_readme(repository_url: str) -> str | None:
         md_content = f"ERROR with README.md ({e})"
 
     return md_content
+
+
+class GitlabTargetType(Enum):
+    GROUP = "GROUP"
+    REPOSITORY = "REPOSITORY"
+    UNKNOWN = "UNKNOWN"
+
+    @staticmethod
+    def identify(url: str) -> "GitlabTargetType":
+        processed = _extract_organisation_and_repository_as_url_block(url)
+        n_slashes = processed.count("/")
+        if n_slashes < 1:
+            return GitlabTargetType.GROUP
+        elif n_slashes > 1:
+            return GitlabTargetType.REPOSITORY
+        else:
+            return GitlabTargetType.UNKNOWN
+
+
+def split_across_target_sets(
+    x: list[str],
+) -> ParsingTargets:
+    groups = []
+    repos = []
+    others = []
+    for i in x:
+        tt_i = GitlabTargetType.identify(i)
+        if tt_i is GitlabTargetType.GROUP:
+            groups.append(i)
+        elif tt_i is GitlabTargetType.REPOSITORY:
+            repos.append(i)
+        else:
+            others.append(i)
+
+    # Orgs are not yet parsed
+    unknown = others + groups
+
+    return ParsingTargets(gitlab_repositories=repos, unknown=unknown)
 
 
 if __name__ == "__main__":

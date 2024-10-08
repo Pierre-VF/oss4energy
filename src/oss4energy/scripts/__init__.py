@@ -15,13 +15,12 @@ from oss4energy.src.helpers import sorted_list_of_unique_elements
 from oss4energy.src.log import log_info
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.nlp.search import SearchResults
-from oss4energy.src.parsers import ParsingTargets
+from oss4energy.src.parsers import ParsingTargets, identify_parsing_targets
 from oss4energy.src.parsers.github_data_io import (
     clean_github_repository_url,
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
-    split_across_target_sets,
 )
 from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -125,7 +124,7 @@ def add_projects_to_listing(
     :param file_path: TOML file link to be updated, defaults to FILE_INPUT_INDEX
     """
     # Splitting URLs into targets
-    new_targets = split_across_target_sets(project_urls)
+    new_targets = identify_parsing_targets(project_urls)
 
     _add_projects_to_listing_file(
         new_targets,

@@ -110,3 +110,14 @@ class ParsingTargets:
             self.gitlab_repositories
         )
         self.unknown = sorted_list_of_unique_elements(self.unknown)
+
+
+def identify_parsing_targets(x: list[str]) -> ParsingTargets:
+    from oss4energy.src.parsers import github_data_io, gitlab_data_io
+
+    out_github = github_data_io.split_across_target_sets(x)
+    out_gitlab = gitlab_data_io.split_across_target_sets(out_github.unknown)
+    out_github.unknown = []
+
+    out = out_github + out_gitlab
+    return out
