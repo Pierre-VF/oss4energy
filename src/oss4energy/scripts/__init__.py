@@ -17,8 +17,7 @@ from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.nlp.search import SearchResults
 from oss4energy.src.parsers import ParsingTargets
 from oss4energy.src.parsers.github_data_io import (
-    GITHUB_URL_BASE,
-    extract_organisation_and_repository_as_url_block,
+    clean_github_repository_url,
     fetch_repositories_in_organisation,
     fetch_repository_details,
     fetch_repository_readme,
@@ -65,8 +64,7 @@ def _add_projects_to_listing_file(
 
     # Cleaning Github repositories links
     new_targets.github_repositories = [
-        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
-        for i in new_targets.github_repositories
+        clean_github_repository_url(i) for i in new_targets.github_repositories
     ]
 
     # Ensuring uniqueness in new targets
