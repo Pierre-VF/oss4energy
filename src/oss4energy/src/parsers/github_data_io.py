@@ -154,6 +154,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         last_commit=last_commit,
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
+        master_branch=branch2use,
     )
     return details
 

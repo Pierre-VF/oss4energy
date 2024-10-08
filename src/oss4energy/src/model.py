@@ -21,3 +21,4 @@ class ProjectDetails(BaseModel):
     last_commit: datetime | None
     open_pull_requests: int
     raw_details: Optional[dict]
+    master_branch: Optional[str]
