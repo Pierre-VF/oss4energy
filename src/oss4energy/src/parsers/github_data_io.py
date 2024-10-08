@@ -14,7 +14,7 @@ from oss4energy.src.parsers import (
 GITHUB_URL_BASE = "https://github.com/"
 
 
-def extract_organisation_and_repository_as_url_block(x: str) -> str:
+def _extract_organisation_and_repository_as_url_block(x: str) -> str:
     # Cleaning up Github prefix
     if x.startswith(GITHUB_URL_BASE):
         x = x.replace(GITHUB_URL_BASE, "")
@@ -28,6 +28,10 @@ def extract_organisation_and_repository_as_url_block(x: str) -> str:
     return x
 
 
+def clean_github_repository_url(url: str) -> str:
+    return GITHUB_URL_BASE + _extract_organisation_and_repository_as_url_block(url)
+
+
 class GithubTargetType(Enum):
     ORGANISATION = "ORGANISATION"
     REPOSITORY = "REPOSITORY"
@@ -35,7 +39,7 @@ class GithubTargetType(Enum):
 
     @staticmethod
     def identify(url: str) -> "GithubTargetType":
-        processed = extract_organisation_and_repository_as_url_block(url)
+        processed = _extract_organisation_and_repository_as_url_block(url)
         n_slashes = processed.count("/")
         if n_slashes < 1:
             return GithubTargetType.ORGANISATION
@@ -91,7 +95,7 @@ def _web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
 
 
 def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]:
-    organisation_name = extract_organisation_and_repository_as_url_block(
+    organisation_name = _extract_organisation_and_repository_as_url_block(
         organisation_name
     )
 
@@ -116,7 +120,7 @@ def _master_branch_name(cleaned_repo_path: str) -> str | None:
 
 
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
-    repo_path = extract_organisation_and_repository_as_url_block(repo_path)
+    repo_path = _extract_organisation_and_repository_as_url_block(repo_path)
 
     r = _web_get(f"https://api.github.com/repos/{repo_path}")
     branch2use = _master_branch_name(repo_path)
@@ -154,12 +158,13 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         last_commit=last_commit,
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
+        master_branch=branch2use,
+        readme=_fetch_repository_readme(repo_path),
     )
     return details
 
 
-def fetch_repository_readme(repository_url: str) -> str | None:
-    repo_name = extract_organisation_and_repository_as_url_block(repository_url)
+def _fetch_repository_readme(repo_name: str) -> str | None:
     try:
         md_content = _web_get(
             f"https://raw.githubusercontent.com/{repo_name}/main/README.md",
@@ -173,7 +178,7 @@ def fetch_repository_readme(repository_url: str) -> str | None:
 
 
 def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
-    repo_name = extract_organisation_and_repository_as_url_block(repository_url)
+    repo_name = _extract_organisation_and_repository_as_url_block(repository_url)
     branch = _master_branch_name(repo_name)
     if branch is None:
         return "ERROR with file tree (unclear master branch)"

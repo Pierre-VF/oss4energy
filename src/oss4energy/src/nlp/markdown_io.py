@@ -29,14 +29,16 @@ def _fix_titles_and_multiple_spaces(text: str) -> str:
     return result
 
 
-def markdown_to_clean_plaintext(x: str) -> str:
+def markdown_to_clean_plaintext(x: str | None) -> str | None:
     """This method converts a markdown string to plaintext
 
     :param x: _description_
     :return: _description_
     """
+    if x is None:
+        return None
     html = markdown(x)
-    x = BeautifulSoup(html)
+    x = BeautifulSoup(html, features="html.parser")
 
     full_content = ""
     for i in ["p", "h1", "h2", "h3"]:

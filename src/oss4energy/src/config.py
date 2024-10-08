@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 class Settings(pydantic_settings.BaseSettings):
     GITHUB_API_TOKEN: Optional[str] = None
+    GITLAB_ACCESS_TOKEN: Optional[str] = None
     SQLITE_DB: str = ".data/db.sqlite"
     # Identifiants du FTP pour l'export
     EXPORT_FTP_URL: Optional[str] = None

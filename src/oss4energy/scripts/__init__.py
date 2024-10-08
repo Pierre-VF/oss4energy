@@ -15,14 +15,11 @@ from oss4energy.src.helpers import sorted_list_of_unique_elements
 from oss4energy.src.log import log_info
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.nlp.search import SearchResults
-from oss4energy.src.parsers import ParsingTargets
-from oss4energy.src.parsers.github_data_io import (
-    GITHUB_URL_BASE,
-    extract_organisation_and_repository_as_url_block,
-    fetch_repositories_in_organisation,
-    fetch_repository_details,
-    fetch_repository_readme,
-    split_across_target_sets,
+from oss4energy.src.parsers import (
+    ParsingTargets,
+    github_data_io,
+    gitlab_data_io,
+    identify_parsing_targets,
 )
 from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -60,12 +57,13 @@ def _add_projects_to_listing_file(
     existing_targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
+        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
     )
     new_targets = existing_targets + parsing_targets
 
     # Cleaning Github repositories links
     new_targets.github_repositories = [
-        GITHUB_URL_BASE + extract_organisation_and_repository_as_url_block(i)
+        github_data_io.clean_github_repository_url(i)
         for i in new_targets.github_repositories
     ]
 
@@ -75,6 +73,7 @@ def _add_projects_to_listing_file(
     # Adding new
     repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
     repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
+    repos_from_toml["gitlab_hosted"]["repositories"] = new_targets.gitlab_repositories
     repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
         new_targets.unknown + repos_from_toml["dropped_targets"]["urls"]
     )
@@ -127,7 +126,7 @@ def add_projects_to_listing(
     :param file_path: TOML file link to be updated, defaults to FILE_INPUT_INDEX
     """
     # Splitting URLs into targets
-    new_targets = split_across_target_sets(project_urls)
+    new_targets = identify_parsing_targets(project_urls)
 
     _add_projects_to_listing_file(
         new_targets,
@@ -159,6 +158,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     targets = ParsingTargets(
         github_organisations=repos_from_toml["github_hosted"]["organisations"],
         github_repositories=repos_from_toml["github_hosted"]["repositories"],
+        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
     )
     targets.ensure_sorted_and_unique_elements()
 
@@ -172,20 +172,29 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             continue  # Skip
 
         try:
-            x = fetch_repositories_in_organisation(org_url)
+            x = github_data_io.fetch_repositories_in_organisation(org_url)
             [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
             print(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
-    log_info("Fetching data for all repositories in Github")
     targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
+
+    log_info("Fetching data for all repositories in Gitlab")
+    for i in targets.gitlab_repositories:
+        try:
+            screening_results.append(gitlab_data_io.fetch_repository_details(i))
+        except Exception as e:
+            print(f" > Error with repo ({e})")
+            bad_repositories.append(i)
+
+    log_info("Fetching data for all repositories in Github")
     for i in targets.github_repositories:
         try:
             if i.endswith("/.github"):
                 continue
-            screening_results.append(fetch_repository_details(i))
+            screening_results.append(github_data_io.fetch_repository_details(i))
         except Exception as e:
             print(f" > Error with repo ({e})")
             bad_repositories.append(i)
@@ -193,16 +202,15 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     df = pd.DataFrame([i.__dict__ for i in screening_results])
     df.set_index("id", inplace=True)
 
-    def _f_readme(x):
-        y = fetch_repository_readme(x)
-        return markdown_to_clean_plaintext(y)  # [:1000]
-
     log_info("Fetching READMEs for all repositories in Github")
-    df["readme"] = df["url"].apply(_f_readme)
 
     df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
-        df2export.to_csv(target_output_file, sep=";")
+        df2export_csv = df.copy()
+        df2export_csv["readme"] = df2export_csv["readme"].apply(
+            markdown_to_clean_plaintext
+        )
+        df2export_csv.to_csv(target_output_file, sep=";")
     elif target_output_file.endswith(".json"):
         df2export.T.to_json(target_output_file)
     else:

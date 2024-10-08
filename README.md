@@ -58,6 +58,8 @@ The token can be imported by generating a *.env* file in the root of your reposi
 ```bash
 # This is your token generated here: https://github.com/settings/tokens/new
 GITHUB_API_TOKEN="...[add your token here]..."
+# This is your token generated here: https://gitlab.com/-/user_settings/personal_access_tokens
+GITLAB_ACCESS_TOKEN="...[add your token here]..."
 
 # You can adjust the position of the cache database here (leave to default if you don't need adjustment)
 SQLITE_DB=".data/db.sqlite"
