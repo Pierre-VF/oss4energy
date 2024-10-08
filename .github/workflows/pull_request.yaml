@@ -33,7 +33,7 @@ jobs:
         
       # Code testing
       - name: Run code test
-        run: source $(poetry env info --path)/bin/activate && pytest .
+        run: source $(poetry env info --path)/bin/activate && make test
 
       #
       # Below, one must be careful to activate the "poetry" environment where relevant, 

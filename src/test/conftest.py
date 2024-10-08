@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def github_repo_url() -> str:
-    return "https://github.com/Pierre-VF/website_scanner"
+    return "https://github.com/Pierre-VF/oss4energy"
 
 
 @pytest.fixture

@@ -43,3 +43,7 @@ download_data:
 .PHONY: help
 help:
 	typer $(CLI_NAME) run --help
+
+.PHONY: test
+test:
+	pytest src/test/.
