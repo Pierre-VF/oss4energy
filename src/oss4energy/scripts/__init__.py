@@ -15,12 +15,11 @@ from oss4energy.src.helpers import sorted_list_of_unique_elements
 from oss4energy.src.log import log_info
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.nlp.search import SearchResults
-from oss4energy.src.parsers import ParsingTargets, identify_parsing_targets
-from oss4energy.src.parsers.github_data_io import (
-    clean_github_repository_url,
-    fetch_repositories_in_organisation,
-    fetch_repository_details,
-    fetch_repository_readme,
+from oss4energy.src.parsers import (
+    ParsingTargets,
+    github_data_io,
+    gitlab_data_io,
+    identify_parsing_targets,
 )
 from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -64,7 +63,8 @@ def _add_projects_to_listing_file(
 
     # Cleaning Github repositories links
     new_targets.github_repositories = [
-        clean_github_repository_url(i) for i in new_targets.github_repositories
+        github_data_io.clean_github_repository_url(i)
+        for i in new_targets.github_repositories
     ]
 
     # Ensuring uniqueness in new targets
@@ -172,20 +172,29 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             continue  # Skip
 
         try:
-            x = fetch_repositories_in_organisation(org_url)
+            x = github_data_io.fetch_repositories_in_organisation(org_url)
             [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
             print(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
-    log_info("Fetching data for all repositories in Github")
     targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
+
+    log_info("Fetching data for all repositories in Gitlab")
+    for i in targets.gitlab_repositories:
+        try:
+            screening_results.append(gitlab_data_io.fetch_repository_details(i))
+        except Exception as e:
+            print(f" > Error with repo ({e})")
+            bad_repositories.append(i)
+
+    log_info("Fetching data for all repositories in Github")
     for i in targets.github_repositories:
         try:
             if i.endswith("/.github"):
                 continue
-            screening_results.append(fetch_repository_details(i))
+            screening_results.append(github_data_io.fetch_repository_details(i))
         except Exception as e:
             print(f" > Error with repo ({e})")
             bad_repositories.append(i)
@@ -193,12 +202,8 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     df = pd.DataFrame([i.__dict__ for i in screening_results])
     df.set_index("id", inplace=True)
 
-    def _f_readme(x):
-        y = fetch_repository_readme(x)
-        return markdown_to_clean_plaintext(y)  # [:1000]
-
     log_info("Fetching READMEs for all repositories in Github")
-    df["readme"] = df["url"].apply(_f_readme)
+    df["readme"] = df["readme"].apply(markdown_to_clean_plaintext)
 
     df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
