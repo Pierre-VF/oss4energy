@@ -96,20 +96,6 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     return details
 
 
-def fetch_repository_readme(repository_url: str) -> str | None:
-    repo_name = _extract_organisation_and_repository_as_url_block(repository_url)
-    try:
-        md_content = _web_get(
-            f"https://raw.githubusercontent.com/{repo_name}/main/README.md",
-            with_headers=None,
-            is_json=False,
-        )
-    except Exception as e:
-        md_content = f"ERROR with README.md ({e})"
-
-    return md_content
-
-
 class GitlabTargetType(Enum):
     GROUP = "GROUP"
     REPOSITORY = "REPOSITORY"

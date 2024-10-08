@@ -203,11 +203,14 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     df.set_index("id", inplace=True)
 
     log_info("Fetching READMEs for all repositories in Github")
-    df["readme"] = df["readme"].apply(markdown_to_clean_plaintext)
 
     df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
-        df2export.to_csv(target_output_file, sep=";")
+        df2export_csv = df.copy()
+        df2export_csv["readme"] = df2export_csv["readme"].apply(
+            markdown_to_clean_plaintext
+        )
+        df2export_csv.to_csv(target_output_file, sep=";")
     elif target_output_file.endswith(".json"):
         df2export.T.to_json(target_output_file)
     else:
