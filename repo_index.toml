@@ -2372,7 +2372,6 @@ repositories = [
     "https://gitlab.com/xdc-model/xdc",
 ]
 
-
 [dropped_targets]
 urls = [
     "https://bitbucket.org/harald_g_svendsen/powergama",
@@ -2388,6 +2387,10 @@ urls = [
     "https://github.com/protontypes/AwesomeCure/tree/main/csv",
     "https://github.com/protontypes/open-sustainable-technology/blob/main/CONTRIBUTING.md",
     "https://github.com/protontypes/open-sustainable-technology/graphs/contributors",
+    "https://gitlab.awi.de/sicopolis/sicopolis",
+    "https://gitlab.com/fame-framework",
+    "https://gitlab.com/openlandmap",
+    "https://gitlab.com/project-catalyst",
     "https://gitlab.lrz.de/open-ees-ses/lp_opt",
     "https://gitlab.lrz.de/open-ees-ses/openbea",
     "https://gitlab.lrz.de/open-ees-ses/simses",
