@@ -90,7 +90,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         last_commit=datetime.fromisoformat(r["last_activity_at"]),
         open_pull_requests=n_open_prs,
         raw_details=r,
-        master_branch=r["default_branch"],
+        master_branch=r["default_branch"],  # Using default branch as master branch
         readme=readme,
     )
     return details

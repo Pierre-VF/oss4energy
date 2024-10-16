@@ -109,9 +109,14 @@ def _master_branch_name(cleaned_repo_path: str) -> str | None:
     # Gather extra metadata
     r_branches = _web_get(f"https://api.github.com/repos/{cleaned_repo_path}/branches")
     branches_names = [i["name"] for i in r_branches]
-    if "main" in branches_names:
+    if len(branches_names) == 1:
+        # If only one branch, then the choice is clear
+        branch2use = branches_names[0]
+    elif "main" in branches_names:
+        # Else, first looking for a "main" branch
         branch2use = "main"
     elif "master" in branches_names:
+        # Then looking for a "master" branch
         branch2use = "master"
     else:
         log_info(f"Unable to select branch among: {branches_names}")
