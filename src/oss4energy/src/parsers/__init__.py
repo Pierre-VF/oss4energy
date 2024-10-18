@@ -2,11 +2,13 @@
 Module for parsers and web I/O
 """
 
+import re
 import time
 from dataclasses import dataclass, field
 
 import requests
 import tomllib
+from bs4 import BeautifulSoup
 from tomlkit import document, dump
 
 from oss4energy.src.database import load_from_database, save_to_database
@@ -101,6 +103,12 @@ class ParsingTargets:
         self.invalid += other.invalid
         return self
 
+    def as_url_list(self, known_repositories_only: bool = True) -> list[str]:
+        out = self.github_repositories + self.gitlab_repositories
+        if not known_repositories_only:
+            out += self.github_organisations + self.unknown + self.invalid
+        return out
+
     def ensure_sorted_and_unique_elements(self) -> None:
         """
         Sorts all fields alphabetically and ensures that there is no redundancies in them
@@ -169,3 +177,131 @@ def identify_parsing_targets(x: list[str]) -> ParsingTargets:
 
     out = out_github + out_gitlab
     return out
+
+
+def isolate_relevant_urls(urls: list[str]) -> list[str]:
+    from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
+    from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
+
+    def __f(i) -> bool:
+        if i.startswith(GITHUB_URL_BASE):
+            if (
+                ("/tree/" in i) or ("/blob/" in i) or i.endswith("/releases")
+            ):  # To avoid file detection leading to clutter
+                return False
+            else:
+                return True
+        elif i.startswith(GITLAB_URL_BASE):
+            return True
+        else:
+            return False
+
+    return [x for x in urls if __f(x)]
+
+
+# For listings
+@dataclass
+class ResourceListing:
+    """
+    Class to make listings easier to work with
+    """
+
+    # For compatibility, all these repo must have data in the README
+    github_readme_listings: list[str] = field(default_factory=list)
+
+    # For the links must be given as hrefs in "a" tags
+    webpage_html: list[str] = field(default_factory=list)
+
+    # Faults
+    fault_urls: list[str] = field(default_factory=list)
+    fault_invalid_urls: list[str] = field(default_factory=list)
+
+    def __add__(self, other: "ResourceListing") -> "ResourceListing":
+        return ResourceListing(
+            github_readme_listings=self.github_readme_listings
+            + other.github_readme_listings,
+            webpage_html=self.webpage_html + other.webpage_html,
+            fault_urls=self.fault_urls + other.fault_urls,
+            fault_invalid_urls=self.fault_invalid_urls + other.fault_invalid_urls,
+        )
+
+    def __iadd__(self, other: "ResourceListing") -> "ResourceListing":
+        self.github_readme_listings += other.github_readme_listings
+        self.webpage_html += other.webpage_html
+        self.fault_urls += other.fault_urls
+        self.fault_invalid_urls += other.fault_invalid_urls
+        return self
+
+    def ensure_sorted_and_unique_elements(self) -> None:
+        """
+        Sorts all fields alphabetically and ensures that there is no redundancies in them
+        """
+        self.github_readme_listings = sorted_list_of_unique_elements(
+            self.github_readme_listings
+        )
+        self.webpage_html = sorted_list_of_unique_elements(self.webpage_html)
+        self.fault_urls = sorted_list_of_unique_elements(self.fault_urls)
+        self.fault_invalid_urls = sorted_list_of_unique_elements(
+            self.fault_invalid_urls
+        )
+
+    @staticmethod
+    def from_toml(toml_file_path: str) -> "ResourceListing":
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Input must be a TOML file")
+
+        with open(toml_file_path, "rb") as f:
+            x = tomllib.load(f)
+
+        return ResourceListing(
+            github_readme_listings=x["github_hosted"].get("readme_listings", []),
+            webpage_html=x["webpages"].get("html", []),
+            fault_urls=x["faults"].get("urls", []),
+            fault_invalid_urls=x["faults"].get("invalid_urls", []),
+        )
+
+    def to_toml(self, toml_file_path: str) -> None:
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Output must be a TOML file")
+
+        # Outputting to a new TOML
+        doc = document()
+        toml_ready_dict = {
+            "github_hosted": {
+                "readme_listings": self.github_readme_listings,
+            },
+            "webpages": {
+                "html": self.webpage_html,
+            },
+            "faults": {
+                "urls": self.fault_urls,
+                "invalid_urls": self.fault_invalid_urls,
+            },
+        }
+
+        for k, v in toml_ready_dict.items():
+            doc.add(k, v)
+
+        with open(toml_file_path, "w") as fp:
+            dump(doc, fp, sort_keys=True)
+
+
+def fetch_all_project_urls_from_html_webpage(url: str) -> ParsingTargets:
+    r_text = cached_web_get_text(url)
+    b = BeautifulSoup(r_text, features="html.parser")
+
+    rs = b.findAll(name="a")
+    shortlisted_urls = isolate_relevant_urls([x.get("href") for x in rs])
+    return identify_parsing_targets(shortlisted_urls)
+
+
+def find_links_in_markdown(markdown_text: str) -> list[str]:
+    pattern = r"\[([^\]]+)\]\(([^\)]+)\)|\[([^\]]+)\]\s*\[([^\]]*)\]"
+    out = re.findall(pattern, markdown_text)
+    return [i[1] for i in out]
+
+
+def fetch_all_project_urls_from_markdown_str(markdown_text: str) -> ParsingTargets:
+    r = find_links_in_markdown(markdown_text)
+    shortlisted_urls = isolate_relevant_urls(r)
+    return identify_parsing_targets(shortlisted_urls)

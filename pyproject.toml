@@ -24,10 +24,14 @@ spacy = "^3.8.2"
 scikit-learn = "^1.5.2"
 markdown = "^3.7"
 pyarrow = "^17.0.0"
+pytest = "^8.3.3"
+ruff = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.2"
 pytest = "^8.3.2"
+jupyterlab = "^4.2.5"
+matplotlib = "^3.9.2"
+pre-commit = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core"]

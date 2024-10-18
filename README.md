@@ -7,27 +7,27 @@ The raw datasets are published here (nice layout has not been made yet):
 - [Raw index](https://data.pierrevf.consulting/oss4energy/summary.toml)
 - [Listing as CSV](https://data.pierrevf.consulting/oss4energy/listing_data.csv)
 
+Input to the discovery process are given here (you are welcome to add your own contribution):
+- the listings scraped are listed in **listing_index.toml** 
+- repositories found in the listings and added manually are found in **repo_index.toml**  
+- the associated scrapers in the folder **"src/oss4energy/src/parsers"**
 
 Other mapping initiatives that you may want to consider looking at (all the repositories that these linked to have been indexed here):
 
 - https://landscape.lfenergy.org/
-- https://opensustain.tech/
+- https://opensustain.tech/ (with further listings at the end of the list)
 
-Sources of the data indexed are:
-
-- https://landscape.lfenergy.org/
-- https://opensustain.tech/
-- Manually added references from the contributors
 
 
 ## What is the vision of this project, is it just yet another listing?
 
-The vision is that this project should provide a list of open-source software for energy applications, which also provides insight on the following aspects, which are key to the success of open-source usage:
+The vision is that this project should provide a list of open-source software for energy and climate applications, which also provides insight on the following aspects, which are key to the success of open-source usage:
 
 - maintenance
 - security
 - tech stack
 - context data (who uses it, maintains it, ...)
+
 
 All of this should be provided in a way that makes it easy to search and interface to (e.g. with a structured machine-readable registry).
 

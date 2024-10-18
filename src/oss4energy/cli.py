@@ -37,7 +37,9 @@ def format():
 @app.command()
 def discover():
     """Generates an index"""
+    scripts.update_listing_of_listings()
     scripts.discover_projects()
+    scripts.format_files()
 
 
 @app.command()
