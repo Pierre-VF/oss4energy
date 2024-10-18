@@ -2,6 +2,7 @@
 Module for parsers and web I/O
 """
 
+import re
 import time
 from dataclasses import dataclass, field
 
@@ -194,6 +195,16 @@ def fetch_all_project_urls_from_html_webpage(url: str) -> ParsingTargets:
 
     rs = b.findAll(name="a")
     shortlisted_urls = isolate_relevant_urls([x.get("href") for x in rs])
-    out = identify_parsing_targets(shortlisted_urls)
+    return identify_parsing_targets(shortlisted_urls)
 
-    return out
+
+def find_links_in_markdown(markdown_text: str) -> list[str]:
+    pattern = r"\[([^\]]+)\]\(([^\)]+)\)|\[([^\]]+)\]\s*\[([^\]]*)\]"
+    out = re.findall(pattern, markdown_text)
+    return [i[1] for i in out]
+
+
+def fetch_all_project_urls_from_markdown_str(markdown_text: str) -> ParsingTargets:
+    r = find_links_in_markdown(markdown_text)
+    shortlisted_urls = isolate_relevant_urls(r)
+    return identify_parsing_targets(shortlisted_urls)
