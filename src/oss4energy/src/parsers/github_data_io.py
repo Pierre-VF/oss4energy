@@ -1,3 +1,12 @@
+"""
+This module takes care of scraping data from Github-hosted code
+
+This implements:
+- Fetching repositories in an organisation
+- Fetching data in a repository (details in the ProjectDetails(...) return)
+- Github URL identification and management (cleanup, type classification, ...)
+"""
+
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
@@ -133,6 +142,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     if branch2use is None:
         last_commit = None
     else:
+        # If ever getting issues with the size here, "?per_page=10" can be added to the URL
+        #  (just need to ensure that all latest commits are included)
         r_last_commit_to_master = _web_get(
             f"https://api.github.com/repos/{repo_path}/commits/{branch2use}"
         )
@@ -140,9 +151,19 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
             r_last_commit_to_master["commit"]["author"]["date"]
         )
 
-    r_pull_requests = _web_get(f"https://api.github.com/repos/{repo_path}/pulls")
+    # Stats (for later)
+    stars = r.get("stargazers_count")
+    watchers = r.get("watchers_count")
+    subscribers = r.get("subscribers_count")
+    open_issues = r.get("open_issues_count")
+    n_forks = r.get("forks")
 
+    # Note: this does not work well as the limit is set to 30
+    r_pull_requests = _web_get(f"https://api.github.com/repos/{repo_path}/pulls")
     n_open_pull_requests = len([i for i in r_pull_requests if i["state"] == "open"])
+    # TODO: fix this better
+    if n_open_pull_requests == 30:
+        n_open_pull_requests = None
 
     organisation = repo_path.split("/")[0]
 
@@ -200,5 +221,7 @@ def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
 
 
 if __name__ == "__main__":
-    r = fetch_repository_file_tree("https://github.com/Pierre-VF/oss4energy/")
+    test_repo = "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
+    r1 = fetch_repository_details(test_repo)
+    r2 = fetch_repository_file_tree(test_repo)
     print("Done")

@@ -19,7 +19,7 @@ class ProjectDetails(BaseModel):
     latest_update: datetime
     language: Optional[str]
     last_commit: datetime | None
-    open_pull_requests: int
+    open_pull_requests: int | None
     raw_details: Optional[dict]
     master_branch: Optional[str]
     readme: Optional[str]
