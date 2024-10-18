@@ -11,13 +11,9 @@ The raw datasets are published here (nice layout has not been made yet):
 Other mapping initiatives that you may want to consider looking at (all the repositories that these linked to have been indexed here):
 
 - https://landscape.lfenergy.org/
-- https://opensustain.tech/
+- https://opensustain.tech/ (with further listings at the end of the list)
 
-Sources of the data indexed are:
-
-- https://landscape.lfenergy.org/
-- https://opensustain.tech/
-- Manually added references from the contributors
+All the listings scraped have their associated scrapers in the folder *"src/oss4energy/src/parsers"*.
 
 
 ## What is the vision of this project, is it just yet another listing?
