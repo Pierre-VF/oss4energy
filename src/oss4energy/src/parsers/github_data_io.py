@@ -185,7 +185,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         license=license,
         language=r["language"],
         latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=last_commit,
+        last_commit=last_commit.date(),
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
         master_branch=branch2use,

@@ -87,7 +87,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         license=license,
         language=None,  # Not available
         latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=datetime.fromisoformat(r["last_activity_at"]),
+        last_commit=datetime.fromisoformat(r["last_activity_at"]).date(),
         open_pull_requests=n_open_prs,
         raw_details=r,
         master_branch=r["default_branch"],  # Using default branch as master branch
