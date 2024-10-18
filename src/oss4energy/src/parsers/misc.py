@@ -42,7 +42,6 @@ def fetch_all() -> ParsingTargets:
         "https://github.com/IrishMarineInstitute/awesome-erddap",
     ]
 
-    github_data_io.fetch_repository_readme()
     res = ParsingTargets()
     for i in github_listings:
         res += __fetch_from_markdown_str(github_data_io.fetch_repository_readme(i))
