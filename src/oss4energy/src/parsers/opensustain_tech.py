@@ -76,7 +76,9 @@ def fetch_categorised_projects_from_opensustain_webpage(
 
 def fetch_listing_of_listings_from_opensustain_webpage() -> ResourceListing:
     x = fetch_categorised_projects_from_opensustain_webpage(relevant_urls_only=False)
-    listing_urls = x.get("Sustainable Development").get("Curated Lists")
+    listing_urls = x.get("Sustainable Development").get("Curated Lists") + x.get(
+        "Sustainable Development"
+    ).get("Data Catalogs and Interfaces")
     gits = isolate_relevant_urls(listing_urls)
     others = [i for i in listing_urls if i not in gits]
     return ResourceListing(
