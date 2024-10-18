@@ -25,6 +25,7 @@ from oss4energy.src.parsers.lfenergy import (
 )
 from oss4energy.src.parsers.opensustain_tech import (
     fetch_all_project_urls_from_opensustain_webpage,
+    fetch_listing_of_listings_from_opensustain_webpage,
 )
 
 FILE_INPUT_INDEX = "repo_index.toml"
@@ -247,5 +248,10 @@ def update_listing_of_listings(
     target_output_file: str = FILE_INPUT_LISTINGS_INDEX,
 ) -> None:
     list_of_listings = ResourceListing.from_toml(FILE_INPUT_LISTINGS_INDEX)
+
+    # Add data from listings of listings
+    listings_open_sustain = fetch_listing_of_listings_from_opensustain_webpage()
+
+    list_of_listings += listings_open_sustain
     list_of_listings.ensure_sorted_and_unique_elements()
     list_of_listings.to_toml(target_output_file)

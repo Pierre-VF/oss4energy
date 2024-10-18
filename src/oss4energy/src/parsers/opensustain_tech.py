@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from oss4energy.src.parsers import (
     ParsingTargets,
+    ResourceListing,
     cached_web_get_text,
     isolate_relevant_urls,
 )
@@ -22,7 +23,7 @@ def _f_clean_key(x):
     return x.text.replace("¶", "")
 
 
-def fetch_categorised_projects_from_from_opensustain_webpage() -> (
+def fetch_categorised_projects_from_opensustain_webpage() -> (
     dict[str, dict[str, list[str]]]
 ):
     """Fetching categorised links to repositories, which can later be used to build classifiers
@@ -69,3 +70,14 @@ def fetch_categorised_projects_from_from_opensustain_webpage() -> (
     }
 
     return focused_d
+
+
+def fetch_listing_of_listings_from_opensustain_webpage() -> ResourceListing:
+    x = fetch_categorised_projects_from_opensustain_webpage()
+    listing_urls = x.get("Sustainable Development").get("Curated Lists")
+    gits = isolate_relevant_urls(listing_urls)
+    others = [i for i in listing_urls if i not in gits]
+    return ResourceListing(
+        github_readme_listings=gits,
+        fault_urls=others,
+    )
