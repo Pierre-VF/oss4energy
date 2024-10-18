@@ -100,3 +100,23 @@ class SearchResults:
     @property
     def n_documents(self) -> int:
         return len(self.__documents)
+
+    @property
+    def statistics(self):
+        # Not stable yet
+        x_numbers = {
+            f"n_{x}s": len(self.__documents[x].unique())
+            for x in ["language", "license", "organisation"]
+        }
+        x_details = {
+            x: self.__documents[x].value_counts()
+            for x in ["language", "license", "is_fork", "organisation"]
+        }
+
+        return (
+            {
+                "repositories": self.n_documents,
+            }
+            | x_numbers
+            | x_details
+        )

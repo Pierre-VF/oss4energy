@@ -40,7 +40,7 @@ def search_in_listing() -> None:
     print(x.n_documents)
 
     msg = """
-Refine search with command: "[keyword,active,language,exclude_forks,show,exit] value"
+Refine search with command: "[keyword,active,language,exclude_forks,show,stats,exit] value"
 >>  """
 
     while (current_input := input(msg).lower()) != "":
@@ -60,6 +60,8 @@ Refine search with command: "[keyword,active,language,exclude_forks,show,exit] v
             kw = [i.title() for i in ci_i[1].split(",")]
             print(f"Refine by languages ({kw})")
             x.refine_by_languages(languages=kw)  # , include_none=True)
+        elif action_i == "stats":
+            print(x.statistics)
         elif action_i == "show":
             print(x.documents)
         elif action_i == "exit":
