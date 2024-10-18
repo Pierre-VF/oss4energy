@@ -13,9 +13,9 @@ from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.parsers import (
     ParsingTargets,
     github_data_io,
-    githubs_green_software_directory,
     gitlab_data_io,
     identify_parsing_targets,
+    misc,
 )
 from oss4energy.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
@@ -83,8 +83,8 @@ def discover_projects(file_path: str = FILE_INPUT_INDEX):
     # Adding from OpenSustainTech
     new_targets += fetch_all_project_urls_from_opensustain_webpage()
 
-    # From Github's Green Software Directory
-    new_targets += githubs_green_software_directory.fetch_all_project_urls_from_readme()
+    # From different listings
+    new_targets += misc.fetch_all()
 
     [log_info(f"DROPPING {i} (target is unclear)") for i in dropped_urls]
 
