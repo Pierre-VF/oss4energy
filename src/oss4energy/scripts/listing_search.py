@@ -40,7 +40,7 @@ def search_in_listing() -> None:
     print(x.n_documents)
 
     msg = """
-Refine search with command: "[keyword,active,language,show,exit] value"
+Refine search with command: "[keyword,active,language,exclude_forks,show,exit] value"
 >>  """
 
     while (current_input := input(msg).lower()) != "":
@@ -49,6 +49,9 @@ Refine search with command: "[keyword,active,language,show,exit] value"
         if action_i == "active":
             print("Refining by active in past year")
             x.refine_by_active_in_past_year()
+        if action_i == "exclude_forks":
+            print("Refining by excluding forks")
+            x.exclude_forks()
         elif action_i == "keyword":
             kw = ci_i[1]
             print(f"Refine by keyword ({kw})")

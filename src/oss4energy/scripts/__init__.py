@@ -5,11 +5,10 @@ Module containing methods to be run in scripts
 import os
 
 import pandas as pd
-import tomllib
 from tomlkit import document, dump
 
 from oss4energy.src.helpers import sorted_list_of_unique_elements
-from oss4energy.src.log import log_info
+from oss4energy.src.log import log_info, log_warning
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
 from oss4energy.src.parsers import (
     ParsingTargets,
@@ -125,18 +124,11 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
 
     log_info("Loading organisations and repositories to be indexed")
-    with open(FILE_INPUT_INDEX, "rb") as f:
-        repos_from_toml = tomllib.load(f)
+    targets = ParsingTargets.from_toml(FILE_INPUT_INDEX)
+    targets.ensure_sorted_and_unique_elements()
 
     bad_organisations = []
     bad_repositories = []
-
-    targets = ParsingTargets(
-        github_organisations=repos_from_toml["github_hosted"]["organisations"],
-        github_repositories=repos_from_toml["github_hosted"]["repositories"],
-        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
-    )
-    targets.ensure_sorted_and_unique_elements()
 
     log_info("Fetching data for all organisations in Github")
     for org_url in targets.github_organisations:
@@ -151,7 +143,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             x = github_data_io.fetch_repositories_in_organisation(org_url)
             [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
-            print(f" > Error with organisation ({e})")
+            log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
     targets.ensure_sorted_and_unique_elements()  # since elements were added
@@ -162,7 +154,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
         try:
             screening_results.append(gitlab_data_io.fetch_repository_details(i))
         except Exception as e:
-            print(f" > Error with repo ({e})")
+            log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
     log_info("Fetching data for all repositories in Github")
@@ -172,7 +164,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
                 continue
             screening_results.append(github_data_io.fetch_repository_details(i))
         except Exception as e:
-            print(f" > Error with repo ({e})")
+            log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
     df = pd.DataFrame([i.__dict__ for i in screening_results])
@@ -239,27 +231,3 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
     )
     format_files()
-
-
-if __name__ == "__main__":
-    log_info("Loading organisations and repositories to be indexed")
-    with open(FILE_INPUT_INDEX, "rb") as f:
-        repos_from_toml = tomllib.load(f)
-
-    # TODOs:
-    # - If repo is a fork: flag it
-
-    from oss4energy.src.parsers.github_data_io import extract_repository_organisation
-
-    # Extract organisation to screen for new repositories
-    orgs = [
-        extract_repository_organisation(i)
-        for i in repos_from_toml["github_hosted"]["repositories"]
-    ]
-
-    targets = ParsingTargets(
-        github_organisations=orgs,
-    )
-    targets.ensure_sorted_and_unique_elements()
-
-    print(targets)

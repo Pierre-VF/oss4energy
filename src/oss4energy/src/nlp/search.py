@@ -89,6 +89,10 @@ class SearchResults:
         self.__documents = self.__documents[self.__documents["latest_update"] > t_last]
         self.__reindex()
 
+    def exclude_forks(self) -> None:
+        self.__documents = self.__documents[self.__documents["is_fork"] == False]
+        self.__reindex()
+
     @property
     def documents(self) -> pd.DataFrame:
         return self.__documents
