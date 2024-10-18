@@ -194,14 +194,15 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
         master_branch=branch2use,
-        readme=_fetch_repository_readme(repo_path),
+        readme=fetch_repository_readme(repo_path),
         is_fork=is_fork,
         forked_from=forked_from,
     )
     return details
 
 
-def _fetch_repository_readme(repo_name: str) -> str | None:
+def fetch_repository_readme(repo_name: str) -> str | None:
+    repo_name = _extract_organisation_and_repository_as_url_block(repo_name)
     try:
         md_content = _web_get(
             f"https://raw.githubusercontent.com/{repo_name}/main/README.md",

@@ -7,19 +7,15 @@ from bs4 import BeautifulSoup
 from oss4energy.src.parsers import (
     ParsingTargets,
     cached_web_get_text,
-    fetch_all_project_urls_from_html_webpage,
     isolate_relevant_urls,
 )
-from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
-from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
-
-
-def _url_is_relevant(url: str) -> bool:
-    return url.startswith(GITHUB_URL_BASE) or url.startswith(GITLAB_URL_BASE)
+from oss4energy.src.parsers import (
+    fetch_all_project_urls_from_html_webpage as __fetch_from_html,
+)
 
 
 def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
-    return fetch_all_project_urls_from_html_webpage("https://opensustain.tech/")
+    return __fetch_from_html("https://opensustain.tech/")
 
 
 def _f_clean_key(x):
