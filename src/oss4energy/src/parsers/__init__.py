@@ -184,7 +184,17 @@ def isolate_relevant_urls(urls: list[str]) -> list[str]:
     from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
 
     def __f(i) -> bool:
-        return i.startswith(GITHUB_URL_BASE) or i.startswith(GITLAB_URL_BASE)
+        if i.startswith(GITHUB_URL_BASE):
+            if (
+                ("/tree/" in i) or ("/blob/" in i) or i.endswith("/releases")
+            ):  # To avoid file detection leading to clutter
+                return False
+            else:
+                return True
+        elif i.startswith(GITLAB_URL_BASE):
+            return True
+        else:
+            return False
 
     return [x for x in urls if __f(x)]
 
