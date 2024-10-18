@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 import requests
 import tomllib
+from bs4 import BeautifulSoup
 from tomlkit import document, dump
 
 from oss4energy.src.database import load_from_database, save_to_database
@@ -174,4 +175,25 @@ def identify_parsing_targets(x: list[str]) -> ParsingTargets:
     out_github.unknown = []
 
     out = out_github + out_gitlab
+    return out
+
+
+def isolate_relevant_urls(urls: list[str]) -> list[str]:
+    from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
+    from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
+
+    def __f(i) -> bool:
+        return i.startswith(GITHUB_URL_BASE) or i.startswith(GITLAB_URL_BASE)
+
+    return [x for x in urls if __f(x)]
+
+
+def fetch_all_project_urls_from_html_webpage(url: str) -> ParsingTargets:
+    r_text = cached_web_get_text(url)
+    b = BeautifulSoup(r_text, features="html.parser")
+
+    rs = b.findAll(name="a")
+    shortlisted_urls = isolate_relevant_urls([x.get("href") for x in rs])
+    out = identify_parsing_targets(shortlisted_urls)
+
     return out

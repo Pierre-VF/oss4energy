@@ -7,7 +7,8 @@ from bs4 import BeautifulSoup
 from oss4energy.src.parsers import (
     ParsingTargets,
     cached_web_get_text,
-    identify_parsing_targets,
+    fetch_all_project_urls_from_html_webpage,
+    isolate_relevant_urls,
 )
 from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
 from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
@@ -18,15 +19,7 @@ def _url_is_relevant(url: str) -> bool:
 
 
 def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
-    r_text = cached_web_get_text("https://opensustain.tech/")
-    b = BeautifulSoup(r_text, features="html.parser")
-
-    rs = b.findAll(name="a")
-    shortlisted_urls = [i for i in [x.get("href") for x in rs] if _url_is_relevant(i)]
-
-    out = identify_parsing_targets(shortlisted_urls)
-
-    return out
+    return fetch_all_project_urls_from_html_webpage("https://opensustain.tech/")
 
 
 def _f_clean_key(x):
@@ -75,7 +68,7 @@ def fetch_categorised_projects_from_from_opensustain_webpage() -> (
 
     # Only keeping URLs deemed relevant
     focused_d = {
-        k1: {k2: [i for i in v2 if _url_is_relevant(i)] for k2, v2 in v1.items()}
+        k1: {k2: isolate_relevant_urls(v2) for k2, v2 in v1.items()}
         for k1, v1 in d.items()
     }
 
