@@ -8,9 +8,9 @@ readme_listings = [
     "https://github.com/brycejohnston/awesome-agriculture", 
     "https://github.com/chrisleaman/awesome-coastal", 
     "https://github.com/github/GreenSoftwareDirectory",
-     "https://github.com/jaychempan/Awesome-LWMs", 
-     "https://github.com/kr-stn/awesome-sentinel", 
-     "https://github.com/pangeo-data/awesome-open-climate-science",
+    "https://github.com/jaychempan/Awesome-LWMs", 
+    "https://github.com/kr-stn/awesome-sentinel", 
+    "https://github.com/pangeo-data/awesome-open-climate-science",
 ]
 
 [webpages]
