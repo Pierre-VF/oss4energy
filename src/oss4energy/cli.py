@@ -5,6 +5,7 @@ CLI module
 import typer
 
 from oss4energy import scripts
+from oss4energy.scripts import data_publication
 
 app = typer.Typer()
 
@@ -42,7 +43,7 @@ def discover():
 @app.command()
 def publish():
     """Publishes the data to an online FTP"""
-    scripts.publish_to_ftp()
+    data_publication.publish_to_ftp()
 
 
 @app.command()
