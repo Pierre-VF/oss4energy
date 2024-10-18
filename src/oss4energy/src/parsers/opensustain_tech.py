@@ -10,6 +10,11 @@ from oss4energy.src.parsers import (
     identify_parsing_targets,
 )
 from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
+from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
+
+
+def _url_is_relevant(url: str) -> bool:
+    return url.startswith(GITHUB_URL_BASE) or url.startswith(GITLAB_URL_BASE)
 
 
 def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
@@ -17,16 +22,14 @@ def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
     b = BeautifulSoup(r_text, features="html.parser")
 
     rs = b.findAll(name="a")
-    shortlisted_urls = [
-        i for i in [x.get("href") for x in rs] if i.startswith(GITHUB_URL_BASE)
-    ]
+    shortlisted_urls = [i for i in [x.get("href") for x in rs] if _url_is_relevant(i)]
 
     out = identify_parsing_targets(shortlisted_urls)
 
     return out
 
 
-def f_clean_key(x):
+def _f_clean_key(x):
     return x.text.replace("¶", "")
 
 
@@ -49,11 +52,11 @@ def fetch_categorised_projects_from_from_opensustain_webpage() -> (
     current_h3 = None
     for i in xs:
         if i.name == "h2":
-            current_h2 = f_clean_key(i)
+            current_h2 = _f_clean_key(i)
             if current_h2 not in d.keys():
                 d[current_h2] = dict()
         elif i.name == "h3":
-            current_h3 = f_clean_key(i)
+            current_h3 = _f_clean_key(i)
             if current_h3 not in d[current_h2].keys():
                 d[current_h2][current_h3] = []
         elif i.name == "li":
@@ -70,4 +73,10 @@ def fetch_categorised_projects_from_from_opensustain_webpage() -> (
         if i in d.keys():
             d.pop(i)
 
-    return d
+    # Only keeping URLs deemed relevant
+    focused_d = {
+        k1: {k2: [i for i in v2 if _url_is_relevant(i)] for k2, v2 in v1.items()}
+        for k1, v1 in d.items()
+    }
+
+    return focused_d
