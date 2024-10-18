@@ -133,6 +133,12 @@ def _master_branch_name(cleaned_repo_path: str) -> str | None:
     return branch2use
 
 
+def extract_repository_organisation(repo_path: str) -> str:
+    repo_path = _extract_organisation_and_repository_as_url_block(repo_path)
+    organisation = repo_path.split("/")[0]
+    return organisation
+
+
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
     repo_path = _extract_organisation_and_repository_as_url_block(repo_path)
 
@@ -165,8 +171,6 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     if n_open_pull_requests == 30:
         n_open_pull_requests = None
 
-    organisation = repo_path.split("/")[0]
-
     license = r["license"]
     if license is not None:
         license = license["name"]
@@ -174,7 +178,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     details = ProjectDetails(
         id=repo_path,
         name=r["name"],
-        organisation=organisation,
+        organisation=extract_repository_organisation(repo_path),
         url=r["html_url"],
         website=r["homepage"],
         description=r["description"],
