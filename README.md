@@ -21,12 +21,13 @@ Other mapping initiatives that you may want to consider looking at (all the repo
 
 ## What is the vision of this project, is it just yet another listing?
 
-The vision is that this project should provide a list of open-source software for energy applications, which also provides insight on the following aspects, which are key to the success of open-source usage:
+The vision is that this project should provide a list of open-source software for energy and climate applications, which also provides insight on the following aspects, which are key to the success of open-source usage:
 
 - maintenance
 - security
 - tech stack
 - context data (who uses it, maintains it, ...)
+
 
 All of this should be provided in a way that makes it easy to search and interface to (e.g. with a structured machine-readable registry).
 
