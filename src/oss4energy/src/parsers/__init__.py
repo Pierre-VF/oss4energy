@@ -101,6 +101,12 @@ class ParsingTargets:
         self.invalid += other.invalid
         return self
 
+    def as_url_list(self, known_repositories_only: bool = True) -> list[str]:
+        out = self.github_repositories + self.gitlab_repositories
+        if not known_repositories_only:
+            out += self.github_organisations + self.unknown + self.invalid
+        return out
+
     def ensure_sorted_and_unique_elements(self) -> None:
         """
         Sorts all fields alphabetically and ensures that there is no redundancies in them
