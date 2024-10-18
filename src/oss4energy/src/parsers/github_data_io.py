@@ -155,7 +155,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         )
         last_commit = datetime.fromisoformat(
             r_last_commit_to_master["commit"]["author"]["date"]
-        )
+        ).date()
 
     # Stats (for later)
     stars = r.get("stargazers_count")
@@ -190,7 +190,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         license=license,
         language=r["language"],
         latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=last_commit.date(),
+        last_commit=last_commit,
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
         master_branch=branch2use,
