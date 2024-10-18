@@ -1,6 +1,8 @@
 import os
 from urllib.request import urlretrieve
 
+import pandas as pd
+
 from oss4energy.scripts import (
     FILE_OUTPUT_DIR,
     FILE_OUTPUT_LISTING_CSV,
@@ -49,7 +51,7 @@ Refine search with command: "[keyword,active,language,exclude_forks,show,stats,e
         if action_i == "active":
             print("Refining by active in past year")
             x.refine_by_active_in_past_year()
-        if action_i == "exclude_forks":
+        elif action_i == "exclude_forks":
             print("Refining by excluding forks")
             x.exclude_forks()
         elif action_i == "keyword":
@@ -61,7 +63,14 @@ Refine search with command: "[keyword,active,language,exclude_forks,show,stats,e
             print(f"Refine by languages ({kw})")
             x.refine_by_languages(languages=kw)  # , include_none=True)
         elif action_i == "stats":
-            print(x.statistics)
+            print("Statistics:")
+            for k, v in x.statistics.items():
+                if isinstance(v, float | int):
+                    print(f" {k}: {v}")
+                elif isinstance(v, pd.Series | pd.DataFrame):
+                    print(f" {k}:")
+                    print(v)
+                    print(" ")
         elif action_i == "show":
             print(x.documents)
         elif action_i == "exit":
@@ -69,4 +78,7 @@ Refine search with command: "[keyword,active,language,exclude_forks,show,stats,e
             break
         else:
             print(f"Invalid request ({current_input})")
-        print(f"{x.n_documents} repositories found")
+            continue
+        print(" ")
+        print(f"== {x.n_documents} repositories in results ==")
+        print(" ")
