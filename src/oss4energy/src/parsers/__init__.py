@@ -186,7 +186,10 @@ def isolate_relevant_urls(urls: list[str]) -> list[str]:
     def __f(i) -> bool:
         if i.startswith(GITHUB_URL_BASE):
             if (
-                ("/tree/" in i) or ("/blob/" in i) or i.endswith("/releases")
+                ("/tree/" in i)
+                or ("/blob/" in i)
+                or i.endswith("/releases")
+                or i.endswith("/issues")
             ):  # To avoid file detection leading to clutter
                 return False
             else:

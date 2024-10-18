@@ -782,6 +782,7 @@ repositories = [
     "https://github.com/PerovskiteSCModelling/IonMonger",
     "https://github.com/PetervanLunteren/EcoAssist",
     "https://github.com/Pierre-VF/Enedis-data-io",
+    "https://github.com/Pierre-VF/oss4energy",
     "https://github.com/PierrickP/multicycles",
     "https://github.com/Planheat/Planheat-Tool",
     "https://github.com/PlanktoScope/PlanktoScope",
@@ -2646,6 +2647,7 @@ repositories = [
 urls = [
     "https://bitbucket.org/harald_g_svendsen/powergama",
     "https://code.usgs.gov/map/gw/visGWDBmrva",
+    "https://energy.acm.org/resources/",
     "https://git.geomar.de/markus-pahlow/UVic-updates-opem",
     "https://git.iws.uni-stuttgart.de/dumux-repositories/dumux",
     "https://git.rwth-aachen.de/acs/public/simulation/DistAIXFramework/distaix",
@@ -2679,5 +2681,7 @@ urls = [
     "https://gricad-gitlab.univ-grenoble-alpes.fr/omegalpes/omegalpes",
     "https://invent.kde.org/cschumac/feep",
     "https://jugit.fz-juelich.de/clams/CLaMS",
+    "https://podaac.jpl.nasa.gov/cloud-datasets",
+    "https://wiki.openmod-initiative.org/wiki/Open_Models",
 ]
 invalid_urls = []

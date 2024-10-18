@@ -8,6 +8,7 @@ readme_listings = [
     "https://github.com/IndEcol/Dashboard",
     "https://github.com/IrishMarineInstitute/awesome-erddap",
     "https://github.com/KKulma/climate-change-data",
+    "https://github.com/Pierre-VF/OpenClimateResources",
     "https://github.com/arctic-risk/awesome-arctic-data",
     "https://github.com/awesome-cryosphere/cryosphere-links",
     "https://github.com/awesome-spectral-indices/awesome-spectral-indices",
@@ -34,7 +35,7 @@ readme_listings = [
 ]
 
 [webpages]
-html = []
+html = ["https://energy.acm.org/resources/", "https://opensustain.tech/"]
 
 [faults]
 urls = [
