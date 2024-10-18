@@ -47,14 +47,7 @@ def _add_projects_to_listing_file(
     file_path: str = FILE_INPUT_INDEX,
 ) -> None:
     log_info(f"Adding projects to {file_path}")
-    with open(file_path, "rb") as f:
-        repos_from_toml = tomllib.load(f)
-
-    existing_targets = ParsingTargets(
-        github_organisations=repos_from_toml["github_hosted"]["organisations"],
-        github_repositories=repos_from_toml["github_hosted"]["repositories"],
-        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
-    )
+    existing_targets = ParsingTargets.from_toml(file_path)
     new_targets = existing_targets + parsing_targets
 
     # Cleaning Github repositories links
@@ -66,22 +59,9 @@ def _add_projects_to_listing_file(
     # Ensuring uniqueness in new targets
     new_targets.ensure_sorted_and_unique_elements()
 
-    # Adding new
-    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
-    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
-    repos_from_toml["gitlab_hosted"]["repositories"] = new_targets.gitlab_repositories
-    repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
-        new_targets.unknown + repos_from_toml["dropped_targets"]["urls"]
-    )
-
     # Outputting to a new TOML
-    doc = document()
-    for k, v in repos_from_toml.items():
-        doc.add(k, v)
-
     log_info(f"Exporting new index to {file_path}")
-    with open(file_path, "w") as fp:
-        dump(doc, fp, sort_keys=True)
+    new_targets.to_toml(file_path)
 
     # Format the file for human readability
     _format_individual_file(file_path)
@@ -259,3 +239,27 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
     )
     format_files()
+
+
+if __name__ == "__main__":
+    log_info("Loading organisations and repositories to be indexed")
+    with open(FILE_INPUT_INDEX, "rb") as f:
+        repos_from_toml = tomllib.load(f)
+
+    # TODOs:
+    # - If repo is a fork: flag it
+
+    from oss4energy.src.parsers.github_data_io import extract_repository_organisation
+
+    # Extract organisation to screen for new repositories
+    orgs = [
+        extract_repository_organisation(i)
+        for i in repos_from_toml["github_hosted"]["repositories"]
+    ]
+
+    targets = ParsingTargets(
+        github_organisations=orgs,
+    )
+    targets.ensure_sorted_and_unique_elements()
+
+    print(targets)
