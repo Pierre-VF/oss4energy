@@ -16,43 +16,35 @@ def fetch_all() -> ParsingTargets:
 
     :return: sum of all listings targets (sorted and unique)
     """
-    r0 = (
-        fetch_all_from_githubs_open_green_software_directory()
-        + fetch_all_from_awesome_green_software()
-        + fetch_all_from_awesome_lwm()
-        + fetch_all_from_awesome_sentinel()
-    )
-    r0.ensure_sorted_and_unique_elements()
-    return r0
 
+    # For compatibility, all these repo must have data in the README
+    github_listings = [
+        # tools to green software
+        "https://github.com/github/GreenSoftwareDirectory",
+        "https://github.com/Green-Software-Foundation/awesome-green-software",
+        # large weather models
+        "https://github.com/jaychempan/Awesome-LWMs",
+        # satellite data
+        "https://github.com/kr-stn/awesome-sentinel",
+        # coastal data
+        "https://github.com/chrisleaman/awesome-coastal",
+        # agriculture
+        "https://github.com/brycejohnston/awesome-agriculture",
+        # cryosphere
+        "https://github.com/awesome-cryosphere/cryosphere-links",
+        # atmospheric, ocean and climate science
+        "https://github.com/pangeo-data/awesome-open-climate-science",
+        # -------------------------------------------
+        # Other
+        # -------------------------------------------
+        "https://github.com/ESIPFed/Awesome-Earth-Artificial-Intelligence",
+        "https://github.com/Agri-Hub/Callisto-Dataset-Collection",
+        "https://github.com/IrishMarineInstitute/awesome-erddap",
+    ]
 
-def fetch_all_from_githubs_open_green_software_directory() -> ParsingTargets:
-    # TAG : tools to green software
-    readme_str = github_data_io.fetch_repository_readme(
-        "https://github.com/github/GreenSoftwareDirectory"
-    )
-    return __fetch_from_markdown_str(readme_str)
-
-
-def fetch_all_from_awesome_green_software() -> ParsingTargets:
-    # TAG : tools to green software
-    readme_str = github_data_io.fetch_repository_readme(
-        "https://github.com/Green-Software-Foundation/awesome-green-software"
-    )
-    return __fetch_from_markdown_str(readme_str)
-
-
-def fetch_all_from_awesome_lwm() -> ParsingTargets:
-    # TAG : large weather models
-    readme_str = github_data_io.fetch_repository_readme(
-        "https://github.com/jaychempan/Awesome-LWMs"
-    )
-    return __fetch_from_markdown_str(readme_str)
-
-
-def fetch_all_from_awesome_sentinel() -> ParsingTargets:
-    # TAG : satellite data
-    readme_str = github_data_io.fetch_repository_readme(
-        "https://github.com/kr-stn/awesome-sentinel"
-    )
-    return __fetch_from_markdown_str(readme_str)
+    github_data_io.fetch_repository_readme()
+    res = ParsingTargets()
+    for i in github_listings:
+        res += __fetch_from_markdown_str(github_data_io.fetch_repository_readme(i))
+    res.ensure_sorted_and_unique_elements()
+    return res
