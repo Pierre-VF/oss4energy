@@ -7,13 +7,16 @@ The raw datasets are published here (nice layout has not been made yet):
 - [Raw index](https://data.pierrevf.consulting/oss4energy/summary.toml)
 - [Listing as CSV](https://data.pierrevf.consulting/oss4energy/listing_data.csv)
 
+Input to the discovery process are given here (you are welcome to add your own contribution):
+- the listings scraped are listed in **listing_index.toml** 
+- repositories found in the listings and added manually are found in **repo_index.toml**  
+- the associated scrapers in the folder **"src/oss4energy/src/parsers"**
 
 Other mapping initiatives that you may want to consider looking at (all the repositories that these linked to have been indexed here):
 
 - https://landscape.lfenergy.org/
 - https://opensustain.tech/ (with further listings at the end of the list)
 
-All the listings scraped have their associated scrapers in the folder *"src/oss4energy/src/parsers"*.
 
 
 ## What is the vision of this project, is it just yet another listing?
