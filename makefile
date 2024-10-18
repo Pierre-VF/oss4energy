@@ -8,9 +8,13 @@ install:
 	pipx ensurepath
 	pipx install poetry==$(POETRY_VERSION) || echo "Poetry already installed"
 	poetry config virtualenvs.create true 
-	poetry install --all-extras --no-cache
+	poetry install --no-cache
 	python -m spacy download en_core_web_sm || echo "Failed download of Spacy model"
 	
+.PHONY: install_dev
+install:
+	poetry install --all-extras --no-cache
+
 .PHONY: add
 add:
 	typer $(CLI_NAME) run add

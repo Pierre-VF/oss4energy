@@ -24,6 +24,7 @@ spacy = "^3.8.2"
 scikit-learn = "^1.5.2"
 markdown = "^3.7"
 pyarrow = "^17.0.0"
+pytest = "^8.3.3"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.2"
