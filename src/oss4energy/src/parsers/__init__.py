@@ -119,6 +119,9 @@ class ParsingTargets:
 
     @staticmethod
     def from_toml(toml_file_path: str) -> "ParsingTargets":
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Input must be a TOML file")
+
         with open(toml_file_path, "rb") as f:
             x = tomllib.load(f)
 
@@ -131,6 +134,9 @@ class ParsingTargets:
         )
 
     def to_toml(self, toml_file_path: str) -> None:
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Output must be a TOML file")
+
         # Outputting to a new TOML
         doc = document()
         toml_ready_dict = {
@@ -150,7 +156,6 @@ class ParsingTargets:
         for k, v in toml_ready_dict.items():
             doc.add(k, v)
 
-        log_info(f"Exporting new index to {toml_file_path}")
         with open(toml_file_path, "w") as fp:
             dump(doc, fp, sort_keys=True)
 
