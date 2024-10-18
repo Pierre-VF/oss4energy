@@ -24,3 +24,50 @@ def fetch_all_project_urls_from_opensustain_webpage() -> ParsingTargets:
     out = identify_parsing_targets(shortlisted_urls)
 
     return out
+
+
+def f_clean_key(x):
+    return x.text.replace("¶", "")
+
+
+def fetch_categorised_projects_from_from_opensustain_webpage() -> (
+    dict[str, dict[str, list[str]]]
+):
+    """Fetching categorised links to repositories, which can later be used to build classifiers
+
+    :return: categorised list of repositories
+    """
+    r_text = cached_web_get_text("https://opensustain.tech/")
+    b = BeautifulSoup(r_text, features="html.parser")
+
+    # This part is built for the specific page structure at the time of writing (18/10/2024)
+    #   and assumes that the information is rolled out in a consistent sequential manner
+    d = dict()
+    orphan_links = []
+    xs = b.findAll(name=["h2", "h3", "li"])
+    current_h2 = None
+    current_h3 = None
+    for i in xs:
+        if i.name == "h2":
+            current_h2 = f_clean_key(i)
+            if current_h2 not in d.keys():
+                d[current_h2] = dict()
+        elif i.name == "h3":
+            current_h3 = f_clean_key(i)
+            if current_h3 not in d[current_h2].keys():
+                d[current_h2][current_h3] = []
+        elif i.name == "li":
+            links = [j.get("href") for j in i.findAll(name="a")]
+            if current_h2 and current_h3:
+                if current_h3 not in d[current_h2].keys():
+                    d[current_h2][current_h3] = []
+                d[current_h2][current_h3] += links
+            else:
+                orphan_links += links
+
+    # Removing code-irrelevant fields
+    for i in ["Contributors", "Artwork and License"]:
+        if i in d.keys():
+            d.pop(i)
+
+    return d
