@@ -163,6 +163,11 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     subscribers = r.get("subscribers_count")
     open_issues = r.get("open_issues_count")
     n_forks = r.get("forks")
+    is_fork = r.get("fork")
+    if is_fork:
+        forked_from = r.get("parent").get("html_url")
+    else:
+        forked_from = None
 
     # Note: this does not work well as the limit is set to 30
     r_pull_requests = _web_get(f"https://api.github.com/repos/{repo_path}/pulls")
@@ -190,6 +195,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         raw_details=r,
         master_branch=branch2use,
         readme=_fetch_repository_readme(repo_path),
+        is_fork=is_fork,
+        forked_from=forked_from,
     )
     return details
 
@@ -225,7 +232,7 @@ def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
 
 
 if __name__ == "__main__":
-    test_repo = "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
+    test_repo = "https://github.com/yezz123/fastapi"  # "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
     r1 = fetch_repository_details(test_repo)
     r2 = fetch_repository_file_tree(test_repo)
     print("Done")

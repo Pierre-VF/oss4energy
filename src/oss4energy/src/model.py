@@ -24,3 +24,4 @@ class ProjectDetails(BaseModel):
     master_branch: Optional[str]
     readme: Optional[str]
     is_fork: Optional[bool]
+    forked_from: Optional[str]
