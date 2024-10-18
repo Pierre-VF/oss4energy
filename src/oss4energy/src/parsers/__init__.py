@@ -212,6 +212,9 @@ class ResourceListing:
     # For compatibility, all these repo must have data in the README
     github_readme_listings: list[str] = field(default_factory=list)
 
+    # For compatibility, all these repo must have data in the README
+    gitlab_readme_listings: list[str] = field(default_factory=list)
+
     # For the links must be given as hrefs in "a" tags
     webpage_html: list[str] = field(default_factory=list)
 
@@ -223,6 +226,8 @@ class ResourceListing:
         return ResourceListing(
             github_readme_listings=self.github_readme_listings
             + other.github_readme_listings,
+            gitlab_readme_listings=self.gitlab_readme_listings
+            + other.gitlab_readme_listings,
             webpage_html=self.webpage_html + other.webpage_html,
             fault_urls=self.fault_urls + other.fault_urls,
             fault_invalid_urls=self.fault_invalid_urls + other.fault_invalid_urls,
@@ -230,6 +235,7 @@ class ResourceListing:
 
     def __iadd__(self, other: "ResourceListing") -> "ResourceListing":
         self.github_readme_listings += other.github_readme_listings
+        self.gitlab_readme_listings += other.gitlab_readme_listings
         self.webpage_html += other.webpage_html
         self.fault_urls += other.fault_urls
         self.fault_invalid_urls += other.fault_invalid_urls
@@ -241,6 +247,9 @@ class ResourceListing:
         """
         self.github_readme_listings = sorted_list_of_unique_elements(
             self.github_readme_listings
+        )
+        self.gitlab_readme_listings = sorted_list_of_unique_elements(
+            self.gitlab_readme_listings
         )
         self.webpage_html = sorted_list_of_unique_elements(self.webpage_html)
         self.fault_urls = sorted_list_of_unique_elements(self.fault_urls)
@@ -258,6 +267,7 @@ class ResourceListing:
 
         return ResourceListing(
             github_readme_listings=x["github_hosted"].get("readme_listings", []),
+            gitlab_readme_listings=x["gitlab_hosted"].get("readme_listings", []),
             webpage_html=x["webpages"].get("html", []),
             fault_urls=x["faults"].get("urls", []),
             fault_invalid_urls=x["faults"].get("invalid_urls", []),
@@ -272,6 +282,9 @@ class ResourceListing:
         toml_ready_dict = {
             "github_hosted": {
                 "readme_listings": self.github_readme_listings,
+            },
+            "gitlab_hosted": {
+                "readme_listings": self.gitlab_readme_listings,
             },
             "webpages": {
                 "html": self.webpage_html,
