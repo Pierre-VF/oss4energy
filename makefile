@@ -12,8 +12,9 @@ install:
 	python -m spacy download en_core_web_sm || echo "Failed download of Spacy model"
 	
 .PHONY: install_dev
-install:
+install_dev:
 	poetry install --all-extras --no-cache
+	pre-commit install
 
 .PHONY: add
 add:
