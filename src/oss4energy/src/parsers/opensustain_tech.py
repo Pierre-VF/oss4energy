@@ -8,6 +8,8 @@ from oss4energy.src.parsers import (
     ParsingTargets,
     ResourceListing,
     cached_web_get_text,
+    github_data_io,
+    gitlab_data_io,
     isolate_relevant_urls,
 )
 from oss4energy.src.parsers import (
@@ -82,6 +84,11 @@ def fetch_listing_of_listings_from_opensustain_webpage() -> ResourceListing:
     gits = isolate_relevant_urls(listing_urls)
     others = [i for i in listing_urls if i not in gits]
     return ResourceListing(
-        github_readme_listings=gits,
+        github_readme_listings=[
+            i for i in gits if i.startswith(github_data_io.GITHUB_URL_BASE)
+        ],
+        gitlab_readme_listings=[
+            i for i in gits if i.startswith(gitlab_data_io.GITLAB_URL_BASE)
+        ],
         fault_urls=others,
     )
