@@ -37,5 +37,9 @@ readme_listings = [
 html = []
 
 [faults]
-urls = []
+urls = [
+    "https://energy.acm.org/resources/",
+    "https://podaac.jpl.nasa.gov/cloud-datasets",
+    "https://wiki.openmod-initiative.org/wiki/Open_Models",
+]
 invalid_urls = []

@@ -23,9 +23,9 @@ def _f_clean_key(x):
     return x.text.replace("¶", "")
 
 
-def fetch_categorised_projects_from_opensustain_webpage() -> (
-    dict[str, dict[str, list[str]]]
-):
+def fetch_categorised_projects_from_opensustain_webpage(
+    relevant_urls_only: bool = True,
+) -> dict[str, dict[str, list[str]]]:
     """Fetching categorised links to repositories, which can later be used to build classifiers
 
     :return: categorised list of repositories
@@ -63,17 +63,19 @@ def fetch_categorised_projects_from_opensustain_webpage() -> (
         if i in d.keys():
             d.pop(i)
 
-    # Only keeping URLs deemed relevant
-    focused_d = {
-        k1: {k2: isolate_relevant_urls(v2) for k2, v2 in v1.items()}
-        for k1, v1 in d.items()
-    }
-
-    return focused_d
+    if relevant_urls_only:
+        # Only keeping URLs deemed relevant
+        focused_d = {
+            k1: {k2: isolate_relevant_urls(v2) for k2, v2 in v1.items()}
+            for k1, v1 in d.items()
+        }
+        return focused_d
+    else:
+        return d
 
 
 def fetch_listing_of_listings_from_opensustain_webpage() -> ResourceListing:
-    x = fetch_categorised_projects_from_opensustain_webpage()
+    x = fetch_categorised_projects_from_opensustain_webpage(relevant_urls_only=False)
     listing_urls = x.get("Sustainable Development").get("Curated Lists")
     gits = isolate_relevant_urls(listing_urls)
     others = [i for i in listing_urls if i not in gits]
