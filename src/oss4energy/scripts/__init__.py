@@ -3,18 +3,13 @@ Module containing methods to be run in scripts
 """
 
 import os
-from ftplib import FTP
-from urllib.request import urlretrieve
 
 import pandas as pd
-import tomllib
 from tomlkit import document, dump
 
-from oss4energy.src.config import SETTINGS
 from oss4energy.src.helpers import sorted_list_of_unique_elements
-from oss4energy.src.log import log_info
+from oss4energy.src.log import log_info, log_warning
 from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
-from oss4energy.src.nlp.search import SearchResults
 from oss4energy.src.parsers import (
     ParsingTargets,
     github_data_io,
@@ -51,14 +46,7 @@ def _add_projects_to_listing_file(
     file_path: str = FILE_INPUT_INDEX,
 ) -> None:
     log_info(f"Adding projects to {file_path}")
-    with open(file_path, "rb") as f:
-        repos_from_toml = tomllib.load(f)
-
-    existing_targets = ParsingTargets(
-        github_organisations=repos_from_toml["github_hosted"]["organisations"],
-        github_repositories=repos_from_toml["github_hosted"]["repositories"],
-        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
-    )
+    existing_targets = ParsingTargets.from_toml(file_path)
     new_targets = existing_targets + parsing_targets
 
     # Cleaning Github repositories links
@@ -70,22 +58,9 @@ def _add_projects_to_listing_file(
     # Ensuring uniqueness in new targets
     new_targets.ensure_sorted_and_unique_elements()
 
-    # Adding new
-    repos_from_toml["github_hosted"]["organisations"] = new_targets.github_organisations
-    repos_from_toml["github_hosted"]["repositories"] = new_targets.github_repositories
-    repos_from_toml["gitlab_hosted"]["repositories"] = new_targets.gitlab_repositories
-    repos_from_toml["dropped_targets"]["urls"] = sorted_list_of_unique_elements(
-        new_targets.unknown + repos_from_toml["dropped_targets"]["urls"]
-    )
-
     # Outputting to a new TOML
-    doc = document()
-    for k, v in repos_from_toml.items():
-        doc.add(k, v)
-
     log_info(f"Exporting new index to {file_path}")
-    with open(file_path, "w") as fp:
-        dump(doc, fp, sort_keys=True)
+    new_targets.to_toml(file_path)
 
     # Format the file for human readability
     _format_individual_file(file_path)
@@ -149,18 +124,11 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
 
     log_info("Loading organisations and repositories to be indexed")
-    with open(FILE_INPUT_INDEX, "rb") as f:
-        repos_from_toml = tomllib.load(f)
+    targets = ParsingTargets.from_toml(FILE_INPUT_INDEX)
+    targets.ensure_sorted_and_unique_elements()
 
     bad_organisations = []
     bad_repositories = []
-
-    targets = ParsingTargets(
-        github_organisations=repos_from_toml["github_hosted"]["organisations"],
-        github_repositories=repos_from_toml["github_hosted"]["repositories"],
-        gitlab_repositories=repos_from_toml["gitlab_hosted"]["repositories"],
-    )
-    targets.ensure_sorted_and_unique_elements()
 
     log_info("Fetching data for all organisations in Github")
     for org_url in targets.github_organisations:
@@ -175,7 +143,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             x = github_data_io.fetch_repositories_in_organisation(org_url)
             [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
-            print(f" > Error with organisation ({e})")
+            log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
     targets.ensure_sorted_and_unique_elements()  # since elements were added
@@ -186,7 +154,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
         try:
             screening_results.append(gitlab_data_io.fetch_repository_details(i))
         except Exception as e:
-            print(f" > Error with repo ({e})")
+            log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
     log_info("Fetching data for all repositories in Github")
@@ -196,7 +164,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
                 continue
             screening_results.append(github_data_io.fetch_repository_details(i))
         except Exception as e:
-            print(f" > Error with repo ({e})")
+            log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
     df = pd.DataFrame([i.__dict__ for i in screening_results])
@@ -263,100 +231,3 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     """
     )
     format_files()
-
-
-def publish_to_ftp() -> None:
-    """Exports data generated to FTP (requires .env to be defined with credentials to the FTP)
-
-    :raises EnvironmentError: when the FTP credentials are not given in environment
-    """
-    for i in [
-        SETTINGS.EXPORT_FTP_URL,
-        SETTINGS.EXPORT_FTP_USER,
-        SETTINGS.EXPORT_FTP_PASSWORD,
-    ]:
-        if i is None:
-            raise EnvironmentError(
-                f"{i.__name__} must be defined for FTP export to work"
-            )
-        if len(i) == 0:
-            raise EnvironmentError(
-                f"{i.__name__} must have an adequate value for FTP export to work"
-            )
-    files_out = [
-        FILE_OUTPUT_SUMMARY_TOML,
-        FILE_OUTPUT_LISTING_CSV,
-        FILE_OUTPUT_LISTING_FEATHER,
-    ]
-
-    with FTP(
-        host=SETTINGS.EXPORT_FTP_URL,
-        user=SETTINGS.EXPORT_FTP_USER,
-        passwd=SETTINGS.EXPORT_FTP_PASSWORD,
-    ) as ftp:
-        try:
-            ftp.mkd("oss4energy")
-        except:
-            pass
-        ftp.cwd("oss4energy")
-        for i in files_out:
-            with open(i, "rb") as fp:
-                log_info(f"Uploading {i}")
-                ftp.storbinary("STOR %s" % os.path.basename(i), fp, blocksize=1024)
-
-
-def search_in_listing() -> None:
-    if not os.path.exists(FILE_OUTPUT_LISTING_FEATHER):
-        raise RuntimeError(
-            "The dataset is not available locally - make sure to download it prior to running this"
-        )
-
-    x = SearchResults(FILE_OUTPUT_LISTING_FEATHER)
-    print("Initial number of documents")
-    print(x.n_documents)
-
-    msg = """
-Refine search with command: "[keyword,active,language,show,exit] value"
->>  """
-
-    while (current_input := input(msg).lower()) != "":
-        ci_i = current_input.split(" ")
-        action_i = ci_i[0]
-        if action_i == "active":
-            print("Refining by active in past year")
-            x.refine_by_active_in_past_year()
-        elif action_i == "keyword":
-            kw = ci_i[1]
-            print(f"Refine by keyword ({kw})")
-            x.refine_by_keyword(keyword=kw)
-        elif action_i == "language":
-            kw = [i.title() for i in ci_i[1].split(",")]
-            print(f"Refine by languages ({kw})")
-            x.refine_by_languages(languages=kw)  # , include_none=True)
-        elif action_i == "show":
-            print(x.documents)
-        elif action_i == "exit":
-            print("Terminating")
-            break
-        else:
-            print(f"Invalid request ({current_input})")
-        print(f"{x.n_documents} repositories found")
-
-
-def download_data():
-    URL_BASE = "https://data.pierrevf.consulting/oss4energy"
-    URL_RAW_INDEX = f"{URL_BASE}/summary.toml"
-    URL_LISTING_CSV = f"{URL_BASE}/listing_data.csv"
-    URL_LISTING_FEATHER = f"{URL_BASE}/listing_data.feather"
-
-    os.makedirs(FILE_OUTPUT_DIR, exist_ok=True)
-    for url_i, file_i in [
-        (URL_RAW_INDEX, FILE_OUTPUT_SUMMARY_TOML),
-        (URL_LISTING_CSV, FILE_OUTPUT_LISTING_CSV),
-        (URL_LISTING_FEATHER, FILE_OUTPUT_LISTING_FEATHER),
-    ]:
-        print(f"Fetching {url_i}")
-        urlretrieve(url_i, file_i)
-        print(f"-> Downloaded to {file_i}")
-
-    print("Download complete")

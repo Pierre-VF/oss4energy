@@ -2421,3 +2421,4 @@ urls = [
     "https://invent.kde.org/cschumac/feep",
     "https://jugit.fz-juelich.de/clams/CLaMS",
 ]
+invalid_urls = []

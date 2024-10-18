@@ -74,6 +74,12 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     r_open_pr = _web_get(url_open_pr, is_json=True)
     n_open_prs = len([i for i in r_open_pr if i.get("state") == "open"])
 
+    fork_details = r.get("forked_from_project")
+    if isinstance(fork_details, dict):
+        forked_from = fork_details.get("namespace").get("web_url")
+    else:
+        forked_from = None
+
     url_readme_file = r["readme_url"].replace("/blob/", "/raw/") + "?inline=false"
     readme = _web_get(url_readme_file, with_headers=False, is_json=False)
 
@@ -87,11 +93,13 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         license=license,
         language=None,  # Not available
         latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=datetime.fromisoformat(r["last_activity_at"]),
+        last_commit=datetime.fromisoformat(r["last_activity_at"]).date(),
         open_pull_requests=n_open_prs,
         raw_details=r,
-        master_branch=r["default_branch"],
+        master_branch=r["default_branch"],  # Using default branch as master branch
         readme=readme,
+        is_fork=(forked_from is not None),
+        forked_from=forked_from,
     )
     return details
 
@@ -137,5 +145,6 @@ def split_across_target_sets(
 
 
 if __name__ == "__main__":
+    r1_forked = fetch_repository_details("https://gitlab.com/giacomo.chiesa/predyce")
     r0 = fetch_repository_details("https://gitlab.com/polito-edyce-prelude/predyce")
     print(r0)

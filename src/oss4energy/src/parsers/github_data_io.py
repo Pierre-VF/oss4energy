@@ -1,3 +1,12 @@
+"""
+This module takes care of scraping data from Github-hosted code
+
+This implements:
+- Fetching repositories in an organisation
+- Fetching data in a repository (details in the ProjectDetails(...) return)
+- Github URL identification and management (cleanup, type classification, ...)
+"""
+
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
@@ -109,14 +118,25 @@ def _master_branch_name(cleaned_repo_path: str) -> str | None:
     # Gather extra metadata
     r_branches = _web_get(f"https://api.github.com/repos/{cleaned_repo_path}/branches")
     branches_names = [i["name"] for i in r_branches]
-    if "main" in branches_names:
+    if len(branches_names) == 1:
+        # If only one branch, then the choice is clear
+        branch2use = branches_names[0]
+    elif "main" in branches_names:
+        # Else, first looking for a "main" branch
         branch2use = "main"
     elif "master" in branches_names:
+        # Then looking for a "master" branch
         branch2use = "master"
     else:
         log_info(f"Unable to select branch among: {branches_names}")
         branch2use = None
     return branch2use
+
+
+def extract_repository_organisation(repo_path: str) -> str:
+    repo_path = _extract_organisation_and_repository_as_url_block(repo_path)
+    organisation = repo_path.split("/")[0]
+    return organisation
 
 
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
@@ -128,6 +148,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     if branch2use is None:
         last_commit = None
     else:
+        # If ever getting issues with the size here, "?per_page=10" can be added to the URL
+        #  (just need to ensure that all latest commits are included)
         r_last_commit_to_master = _web_get(
             f"https://api.github.com/repos/{repo_path}/commits/{branch2use}"
         )
@@ -135,11 +157,24 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
             r_last_commit_to_master["commit"]["author"]["date"]
         )
 
+    # Stats (for later)
+    stars = r.get("stargazers_count")
+    watchers = r.get("watchers_count")
+    subscribers = r.get("subscribers_count")
+    open_issues = r.get("open_issues_count")
+    n_forks = r.get("forks")
+    is_fork = r.get("fork")
+    if is_fork:
+        forked_from = r.get("parent").get("html_url")
+    else:
+        forked_from = None
+
+    # Note: this does not work well as the limit is set to 30
     r_pull_requests = _web_get(f"https://api.github.com/repos/{repo_path}/pulls")
-
     n_open_pull_requests = len([i for i in r_pull_requests if i["state"] == "open"])
-
-    organisation = repo_path.split("/")[0]
+    # TODO: fix this better
+    if n_open_pull_requests == 30:
+        n_open_pull_requests = None
 
     license = r["license"]
     if license is not None:
@@ -148,18 +183,20 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     details = ProjectDetails(
         id=repo_path,
         name=r["name"],
-        organisation=organisation,
+        organisation=extract_repository_organisation(repo_path),
         url=r["html_url"],
         website=r["homepage"],
         description=r["description"],
         license=license,
         language=r["language"],
         latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=last_commit,
+        last_commit=last_commit.date(),
         open_pull_requests=n_open_pull_requests,
         raw_details=r,
         master_branch=branch2use,
         readme=_fetch_repository_readme(repo_path),
+        is_fork=is_fork,
+        forked_from=forked_from,
     )
     return details
 
@@ -195,5 +232,7 @@ def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
 
 
 if __name__ == "__main__":
-    r = fetch_repository_file_tree("https://github.com/Pierre-VF/oss4energy/")
+    test_repo = "https://github.com/yezz123/fastapi"  # "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
+    r1 = fetch_repository_details(test_repo)
+    r2 = fetch_repository_file_tree(test_repo)
     print("Done")

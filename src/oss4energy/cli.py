@@ -5,6 +5,7 @@ CLI module
 import typer
 
 from oss4energy import scripts
+from oss4energy.scripts import data_publication, listing_search
 
 app = typer.Typer()
 
@@ -42,7 +43,7 @@ def discover():
 @app.command()
 def publish():
     """Publishes the data to an online FTP"""
-    scripts.publish_to_ftp()
+    data_publication.publish_to_ftp()
 
 
 @app.command()
@@ -54,13 +55,13 @@ def generate_listing():
 @app.command()
 def search():
     """Searches in the listing"""
-    scripts.search_in_listing()
+    listing_search.search_in_listing()
 
 
 @app.command()
 def download_data():
     """Downloads the latest listing"""
-    scripts.download_data()
+    listing_search.download_data()
 
 
 if __name__ == "__main__":

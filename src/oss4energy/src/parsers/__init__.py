@@ -6,6 +6,8 @@ import time
 from dataclasses import dataclass, field
 
 import requests
+import tomllib
+from tomlkit import document, dump
 
 from oss4energy.src.database import load_from_database, save_to_database
 from oss4energy.src.helpers import sorted_list_of_unique_elements
@@ -80,6 +82,7 @@ class ParsingTargets:
     github_organisations: list[str] = field(default_factory=list)
     gitlab_repositories: list[str] = field(default_factory=list)
     unknown: list[str] = field(default_factory=list)
+    invalid: list[str] = field(default_factory=list)
 
     def __add__(self, other: "ParsingTargets") -> "ParsingTargets":
         return ParsingTargets(
@@ -87,6 +90,7 @@ class ParsingTargets:
             github_repositories=self.github_repositories + other.github_repositories,
             gitlab_repositories=self.gitlab_repositories + other.gitlab_repositories,
             unknown=self.unknown + other.unknown,
+            invalid=self.invalid + other.invalid,
         )
 
     def __iadd__(self, other: "ParsingTargets") -> "ParsingTargets":
@@ -94,6 +98,7 @@ class ParsingTargets:
         self.github_organisations += other.github_organisations
         self.gitlab_repositories += other.gitlab_repositories
         self.unknown += other.unknown
+        self.invalid += other.invalid
         return self
 
     def ensure_sorted_and_unique_elements(self) -> None:
@@ -110,6 +115,49 @@ class ParsingTargets:
             self.gitlab_repositories
         )
         self.unknown = sorted_list_of_unique_elements(self.unknown)
+        self.invalid = sorted_list_of_unique_elements(self.invalid)
+
+    @staticmethod
+    def from_toml(toml_file_path: str) -> "ParsingTargets":
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Input must be a TOML file")
+
+        with open(toml_file_path, "rb") as f:
+            x = tomllib.load(f)
+
+        return ParsingTargets(
+            github_organisations=x["github_hosted"].get("organisations", []),
+            github_repositories=x["github_hosted"].get("repositories", []),
+            gitlab_repositories=x["gitlab_hosted"].get("repositories", []),
+            unknown=x["dropped_targets"].get("urls", []),
+            invalid=x["dropped_targets"].get("invalid_urls", []),
+        )
+
+    def to_toml(self, toml_file_path: str) -> None:
+        if not toml_file_path.endswith(".toml"):
+            raise ValueError("Output must be a TOML file")
+
+        # Outputting to a new TOML
+        doc = document()
+        toml_ready_dict = {
+            "github_hosted": {
+                "organisations": self.github_organisations,
+                "repositories": self.github_repositories,
+            },
+            "gitlab_hosted": {
+                "repositories": self.gitlab_repositories,
+            },
+            "dropped_targets": {
+                "urls": self.unknown,
+                "invalid_urls": self.invalid,
+            },
+        }
+
+        for k, v in toml_ready_dict.items():
+            doc.add(k, v)
+
+        with open(toml_file_path, "w") as fp:
+            dump(doc, fp, sort_keys=True)
 
 
 def identify_parsing_targets(x: list[str]) -> ParsingTargets:
