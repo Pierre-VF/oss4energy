@@ -188,6 +188,7 @@ def isolate_relevant_urls(urls: list[str]) -> list[str]:
             if (
                 ("/tree/" in i)
                 or ("/blob/" in i)
+                or ("/actions/workflows/" in i)
                 or i.endswith("/releases")
                 or i.endswith("/issues")
             ):  # To avoid file detection leading to clutter
