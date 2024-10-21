@@ -100,7 +100,7 @@ class ParsingTargets:
     def __iadd__(self, other: "ParsingTargets") -> "ParsingTargets":
         self.github_repositories += other.github_repositories
         self.github_organisations += other.github_organisations
-        self.gitlab_groups += (other.gitlab_groups,)
+        self.gitlab_groups += other.gitlab_groups
         self.gitlab_repositories += other.gitlab_repositories
         self.unknown += other.unknown
         self.invalid += other.invalid
