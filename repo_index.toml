@@ -2608,6 +2608,7 @@ repositories = [
 ]
 
 [gitlab_hosted]
+groups = []
 repositories = [
     "https://gitlab.awi.de/sicopolis/sicopolis",
     "https://gitlab.com/NRAP/OpenIAM",

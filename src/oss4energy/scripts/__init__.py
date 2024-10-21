@@ -160,6 +160,22 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
 
+    log_info("Fetching data for all groups in Gitlab")
+    for org_url in targets.gitlab_groups:
+        url2check = org_url.replace("https://", "")
+        if url2check.endswith("/"):
+            url2check = url2check[:-1]
+        if url2check.count("/") > 1:
+            log_info(f"SKIPPING repo {org_url}")
+            continue  # Skip
+
+        try:
+            x = gitlab_data_io.fetch_repositories_in_group(org_url)
+            [targets.gitlab_repositories.append(i) for i in x.values()]
+        except Exception as e:
+            log_warning(f" > Error with organisation ({e})")
+            bad_organisations.append(org_url)
+
     log_info("Fetching data for all repositories in Gitlab")
     for i in targets.gitlab_repositories:
         try:
