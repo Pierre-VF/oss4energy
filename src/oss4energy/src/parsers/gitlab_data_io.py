@@ -61,6 +61,14 @@ def _web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
     return res
 
 
+def fetch_repositories_in_group(organisation_name: str) -> dict[str, str]:
+    group_id = _extract_organisation_and_repository_as_url_block(organisation_name)
+    res = _web_get(
+        f"https://gitlab.com/api/v4/groups/{group_id}/projects",
+    )
+    return {r["name"]: r["web_url"] for r in res}
+
+
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
     repo_id = _extract_organisation_and_repository_as_url_block(repo_path)
 
@@ -145,6 +153,7 @@ def split_across_target_sets(
 
 
 if __name__ == "__main__":
+    r00 = fetch_repositories_in_group("https://gitlab.com/polito-edyce-prelude")
     r1_forked = fetch_repository_details("https://gitlab.com/giacomo.chiesa/predyce")
     r0 = fetch_repository_details("https://gitlab.com/polito-edyce-prelude/predyce")
     print(r0)
