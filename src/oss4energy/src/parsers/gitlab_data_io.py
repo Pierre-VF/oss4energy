@@ -91,6 +91,7 @@ def _extract_organisation_and_repository_as_url_block(x: str) -> str:
 def _gitlab_headers() -> dict[str, str]:
     if SETTINGS.GITLAB_ACCESS_TOKEN is None:
         log_info("Gitlab running in PUBLIC mode")
+        headers = {}
     else:
         log_info("Gitlab running in AUTHENTICATED mode")
         headers = {
