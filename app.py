@@ -100,11 +100,11 @@ async def search_results(
         local_docs = SEARCH_RESULTS.documents.drop(columns=["readme"])
 
     df_out = local_docs.merge(
-        df_combined[["score"]].sort_values(by="score", ascending=False),
+        df_combined[["score"]],
         how="inner",
         left_on="url",
         right_index=True,
-    )
+    ).sort_values(by="score", ascending=False)
     df_shown = df_out.head(n_results)  # TODO: for speed make this earlier on
     n_found = len(df_shown)
     n_total_found = len(df_out)
