@@ -18,18 +18,27 @@ def _lower_str(x: str, *args, **kwargs):
 
 
 class SearchResults:
-    def __init__(self, documents: pd.DataFrame | str):
+    def __init__(self, documents: pd.DataFrame | str | None = None):
         """Instantiates a result search object
 
         :param documents: dataframe(language,description,readme,latest_update) or filename (.feather)
         """
+        self.__documents = None
+        if documents:
+            self.load_documents(documents)
+
+    def load_documents(self, documents: pd.DataFrame | str):
         if isinstance(documents, str):
             assert documents.endswith(
                 ".feather"
             ), f"Only accepting .feather files (not {documents})"
-            self.__documents = pd.read_feather(documents)
+            new_docs = pd.read_feather(documents)
         else:
-            self.__documents = documents.copy()
+            new_docs = documents.copy()
+        if self.__documents:
+            self.__documents += new_docs
+        else:
+            self.__documents = new_docs
 
         # Ensuring that the required columns exist
         available_columns = self.__documents.keys()
