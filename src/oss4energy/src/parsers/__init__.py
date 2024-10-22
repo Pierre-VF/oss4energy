@@ -192,7 +192,7 @@ def identify_parsing_targets(x: list[str]) -> ParsingTargets:
 
 def isolate_relevant_urls(urls: list[str]) -> list[str]:
     from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
-    from oss4energy.src.parsers.gitlab_data_io import GITLAB_URL_BASE
+    from oss4energy.src.parsers.gitlab_data_io import GITLAB_ANY_URL_PREFIX
 
     def __f(i) -> bool:
         if i.startswith(GITHUB_URL_BASE):
@@ -206,7 +206,7 @@ def isolate_relevant_urls(urls: list[str]) -> list[str]:
                 return False
             else:
                 return True
-        elif i.startswith(GITLAB_URL_BASE):
+        elif i.startswith(GITLAB_ANY_URL_PREFIX):
             return True
         else:
             return False

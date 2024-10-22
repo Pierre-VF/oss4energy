@@ -20,6 +20,9 @@ from oss4energy.src.parsers import (
     cached_web_get_text,
 )
 
+GITLAB_ANY_URL_PREFIX = (
+    "https://gitlab."  # Since Gitlabs can be self-hosted on another domain
+)
 GITLAB_URL_BASE = "https://gitlab.com/"
 
 
