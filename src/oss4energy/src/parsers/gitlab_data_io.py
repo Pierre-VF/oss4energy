@@ -26,8 +26,45 @@ GITLAB_ANY_URL_PREFIX = (
 GITLAB_URL_BASE = "https://gitlab.com/"
 
 
+class GitlabTargetType(Enum):
+    GROUP = "GROUP"
+    PROJECT = "PROJECT"
+    UNKNOWN = "UNKNOWN"
+
+    @staticmethod
+    def identify(url: str) -> "GitlabTargetType":
+        processed = _extract_organisation_and_repository_as_url_block(url)
+        n_slashes = processed.count("/")
+        if n_slashes < 1:
+            return GitlabTargetType.GROUP
+        elif n_slashes == 1:
+            # TODO : this is not good enough for sub-projects (but best quick fix for now)
+            return GitlabTargetType.PROJECT
+        else:
+            return GitlabTargetType.UNKNOWN
+
+
+def split_across_target_sets(
+    x: list[str],
+) -> ParsingTargets:
+    groups = []
+    projects = []
+    others = []
+    for i in x:
+        tt_i = GitlabTargetType.identify(i)
+        if tt_i is GitlabTargetType.GROUP:
+            groups.append(i)
+        elif tt_i is GitlabTargetType.PROJECT:
+            projects.append(i)
+        else:
+            others.append(i)
+    return ParsingTargets(
+        gitlab_groups=groups, gitlab_repositories=projects, unknown=others
+    )
+
+
 def _extract_organisation_and_repository_as_url_block(x: str) -> str:
-    # Cleaning up Github prefix
+    # Cleaning up Gitlab prefix
     if x.startswith(GITLAB_URL_BASE):
         x = x.replace(GITLAB_URL_BASE, "")
     # Removing eventual extra information in URL
@@ -113,46 +150,6 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         forked_from=forked_from,
     )
     return details
-
-
-class GitlabTargetType(Enum):
-    GROUP = "GROUP"
-    REPOSITORY = "REPOSITORY"
-    UNKNOWN = "UNKNOWN"
-
-    @staticmethod
-    def identify(url: str) -> "GitlabTargetType":
-        if not url.startswith(GITLAB_URL_BASE):
-            return GitlabTargetType.UNKNOWN
-        processed = _extract_organisation_and_repository_as_url_block(url)
-        n_slashes = processed.count("/")
-        if n_slashes < 1:
-            return GitlabTargetType.GROUP
-        elif n_slashes >= 1:
-            return GitlabTargetType.REPOSITORY
-        else:
-            return GitlabTargetType.UNKNOWN
-
-
-def split_across_target_sets(
-    x: list[str],
-) -> ParsingTargets:
-    groups = []
-    repos = []
-    others = []
-    for i in x:
-        tt_i = GitlabTargetType.identify(i)
-        if tt_i is GitlabTargetType.GROUP:
-            groups.append(i)
-        elif tt_i is GitlabTargetType.REPOSITORY:
-            repos.append(i)
-        else:
-            others.append(i)
-
-    # Orgs are not yet parsed
-    unknown = others + groups
-
-    return ParsingTargets(gitlab_repositories=repos, unknown=unknown)
 
 
 if __name__ == "__main__":
