@@ -61,7 +61,9 @@ async def search(request: Request):
 
 
 @app.get("/results", response_class=HTMLResponse)
-async def search_results(request: Request, query: str, language: Optional[str] = None):
+async def search_results(
+    request: Request, query: str, language: Optional[str] = None, n_results: int = 100
+):
     res_desc = SEARCH_ENGINE_DESCRIPTIONS.search(query)
     res_readme = SEARCH_ENGINE_DESCRIPTIONS.search(query)
 
@@ -75,7 +77,9 @@ async def search_results(request: Request, query: str, language: Optional[str] =
         )
         .fillna(0)
     )
-    df_combined["score"] = df_combined["description"] * 10 + df_combined["readme"]
+    df_combined["score"] = (
+        df_combined["description"] * 10 + df_combined["readme"]
+    ).round(1)
 
     # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
     if language:
@@ -91,11 +95,16 @@ async def search_results(request: Request, query: str, language: Optional[str] =
         left_on="url",
         right_index=True,
     )
+    df_shown = df_out.head(n_results)  # TODO: for speed make this earlier on
+    n_found = len(df_shown)
+    n_total_found = len(df_out)
     return templates.TemplateResponse(
         "results.html",
         {
             "request": request,
-            "results": df_out.head(100),  # TODO: for speed make this earlier on
+            "n_found": n_found,
+            "n_total_found": n_total_found,
+            "results": df_shown,
             "query": query,
         },
     )

@@ -3,6 +3,11 @@
 
 {% block content %}
 <body>
+    {% if n_total_found > n_found %}
+        <p>{{n_total_found}} results found (showing the {{ n_found }} first here):</p>
+    {% else %}    
+        <p>{{n_total_found}} results found:</p>
+    {% endif %}
     <table>
         <tr>
             <th>Name</th>
