@@ -2,7 +2,7 @@
 
 (This is a work in progress - the resulting index will be published when available, so please keep an eye on this repository and tip the project about any resources that you are aware of)
 
-A first search prototype is available here: https://oss4energy.onrender.com/
+A first search prototype is available here: https://oss4climate.pierrevf.consulting/ 
 
 The raw datasets are published here (nice layout has not been made yet):
 
