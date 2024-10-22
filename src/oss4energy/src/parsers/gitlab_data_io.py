@@ -9,7 +9,7 @@ Note:
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from oss4energy.src.config import SETTINGS
 from oss4energy.src.log import log_info
@@ -65,10 +65,18 @@ def split_across_target_sets(
     )
 
 
+def _extract_gitlab_host(url: str) -> str:
+    parsed_url = urlparse(url)
+    return parsed_url.hostname
+
+
 def _extract_organisation_and_repository_as_url_block(x: str) -> str:
     # Cleaning up Gitlab prefix
     if x.startswith(GITLAB_URL_BASE):
         x = x.replace(GITLAB_URL_BASE, "")
+    else:
+        h = _extract_gitlab_host(url=x)
+        x = x.replace(f"https://{h}/", "")
     # Removing eventual extra information in URL
     for i in ["#", "&"]:
         if i in x:
@@ -92,7 +100,8 @@ def _gitlab_headers() -> dict[str, str]:
 
 
 def _web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
-    if with_headers:
+    if with_headers and url.startswith(GITLAB_URL_BASE):
+        # Only using the headers with the actual gitlab.com calls
         headers = _gitlab_headers()
     else:
         headers = None
@@ -104,37 +113,53 @@ def _web_get(url: str, with_headers: bool = True, is_json: bool = True) -> dict:
 
 
 def fetch_repositories_in_group(organisation_name: str) -> dict[str, str]:
+    gitlab_host = _extract_gitlab_host(url=organisation_name)
     group_id = _extract_organisation_and_repository_as_url_block(organisation_name)
     res = _web_get(
-        f"https://gitlab.com/api/v4/groups/{group_id}/projects",
+        f"https://{gitlab_host}/api/v4/groups/{group_id}/projects",
     )
     return {r["name"]: r["web_url"] for r in res}
 
 
 def fetch_repository_details(repo_path: str) -> ProjectDetails:
+    gitlab_host = _extract_gitlab_host(url=repo_path)
     repo_id = _extract_organisation_and_repository_as_url_block(repo_path)
-
-    url = f"https://gitlab.com/api/v4/projects/{quote_plus(repo_id)}"
-
-    r = _web_get(url, is_json=True)
+    r = _web_get(
+        f"https://{gitlab_host}/api/v4/projects/{quote_plus(repo_id)}", is_json=True
+    )
 
     organisation = r["namespace"]["name"]
     license = "?"  # TODO : need to find how to parse the licence of a project
-    url_open_pr = r["_links"]["merge_requests"]
-    r_open_pr = _web_get(url_open_pr, is_json=True)
-    n_open_prs = len([i for i in r_open_pr if i.get("state") == "open"])
 
+    url_readme_file = r["readme_url"].replace("/blob/", "/raw/") + "?inline=false"
+    readme = _web_get(url_readme_file, with_headers=False, is_json=False)
+
+    # Fields treated as optional or unstable across non-"gitlab.com" instances
     fork_details = r.get("forked_from_project")
     if isinstance(fork_details, dict):
         forked_from = fork_details.get("namespace").get("web_url")
     else:
         forked_from = None
+    if "updated_at" in r:
+        latest_update = datetime.fromisoformat(r["updated_at"])
+    else:
+        latest_update = None
 
-    url_readme_file = r["readme_url"].replace("/blob/", "/raw/") + "?inline=false"
-    readme = _web_get(url_readme_file, with_headers=False, is_json=False)
+    if "last_activity_at" in r:
+        last_commit = datetime.fromisoformat(r["last_activity_at"]).date()
+    else:
+        last_commit = None
+
+    n_open_prs = None
+    url_open_pr_raw = r.get("_links")
+    if url_open_pr_raw:
+        url_open_pr = url_open_pr_raw.get("merge_requests")
+        if url_open_pr:
+            r_open_pr = _web_get(url_open_pr, is_json=True)
+            n_open_prs = len([i for i in r_open_pr if i.get("state") == "open"])
 
     details = ProjectDetails(
-        id=repo_path,
+        id=repo_id,
         name=r["name"],
         organisation=organisation,
         url=r["web_url"],
@@ -142,8 +167,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         description=r["description"],
         license=license,
         language=None,  # Not available
-        latest_update=datetime.fromisoformat(r["updated_at"]),
-        last_commit=datetime.fromisoformat(r["last_activity_at"]).date(),
+        latest_update=latest_update,
+        last_commit=last_commit,
         open_pull_requests=n_open_prs,
         raw_details=r,
         master_branch=r["default_branch"],  # Using default branch as master branch
@@ -155,6 +180,8 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
 
 if __name__ == "__main__":
+    r0_forked = fetch_repository_details("https://gitlab.dune-project.org/dorie/dorie")
+
     r00 = fetch_repositories_in_group("https://gitlab.com/polito-edyce-prelude")
     r1_forked = fetch_repository_details("https://gitlab.com/giacomo.chiesa/predyce")
     r0 = fetch_repository_details("https://gitlab.com/polito-edyce-prelude/predyce")

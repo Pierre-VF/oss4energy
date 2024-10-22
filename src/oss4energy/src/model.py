@@ -16,7 +16,7 @@ class ProjectDetails(BaseModel):
     website: Optional[str]
     description: Optional[str]
     license: Optional[str]
-    latest_update: datetime
+    latest_update: Optional[datetime]
     language: Optional[str]
     last_commit: Optional[date]
     open_pull_requests: Optional[int]
