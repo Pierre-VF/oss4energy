@@ -45,6 +45,10 @@ search:
 download_data:
 	typer $(CLI_NAME) run download-data
 
+.PHONY: run_app
+run_app:
+	gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8080 app:app
+
 .PHONY: help
 help:
 	typer $(CLI_NAME) run --help

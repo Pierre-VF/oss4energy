@@ -126,4 +126,5 @@ def read_about(request: Request):
 
 
 if __name__ == "__main__":
-    run(app, host="127.0.0.1", port=8000)
+    # For local testing
+    run(app, host="127.0.0.1", port=8080)
