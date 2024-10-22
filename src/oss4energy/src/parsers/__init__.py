@@ -134,6 +134,35 @@ class ParsingTargets:
         self.unknown = sorted_list_of_unique_elements(self.unknown)
         self.invalid = sorted_list_of_unique_elements(self.invalid)
 
+    def __included_in_valid_targets(self, url: str) -> bool:
+        return (
+            url
+            in self.github_organisations
+            + self.github_repositories
+            + self.gitlab_groups
+            + self.gitlab_repositories
+        )
+
+    def cleanup(self) -> None:
+        """
+        Method to cleanup the object (removing obsolete entries and redundancies)
+        """
+        self.ensure_sorted_and_unique_elements()
+        # Removing all repos that are listed in organisations/groups
+        self.github_repositories = [
+            i for i in self.github_repositories if i not in self.github_organisations
+        ]
+        self.gitlab_repositories = [
+            i for i in self.gitlab_repositories if i not in self.gitlab_groups
+        ]
+        # Removing unknown repos
+        self.unknown = [
+            i for i in self.unknown if not self.__included_in_valid_targets(i)
+        ]
+        self.invalid = [
+            i for i in self.invalid if not self.__included_in_valid_targets(i)
+        ]
+
     @staticmethod
     def from_toml(toml_file_path: str) -> "ParsingTargets":
         if not toml_file_path.endswith(".toml"):

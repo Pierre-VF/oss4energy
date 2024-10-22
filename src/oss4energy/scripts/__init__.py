@@ -60,8 +60,8 @@ def _add_projects_to_listing_file(
         for i in new_targets.github_repositories
     ]
 
-    # Ensuring uniqueness in new targets
-    new_targets.ensure_sorted_and_unique_elements()
+    # Ensuring uniqueness in new targets and cleaning up redundancies
+    new_targets.cleanup()
 
     # Outputting to a new TOML
     log_info(f"Exporting new index to {file_path}")
