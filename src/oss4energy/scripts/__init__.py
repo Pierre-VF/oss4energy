@@ -165,12 +165,12 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             url2check = url2check[:-1]
         if url2check.count("/") > 1:
             log_info(f"SKIPPING repo {org_url}")
-            targets.gitlab_repositories.append(org_url)  # Mapping it to repos instead
+            targets.gitlab_projects.append(org_url)  # Mapping it to repos instead
             continue  # Skip
 
         try:
             x = gitlab_data_io.fetch_repositories_in_group(org_url)
-            [targets.gitlab_repositories.append(i) for i in x.values()]
+            [targets.gitlab_projects.append(i) for i in x.values()]
         except Exception as e:
             log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
@@ -179,7 +179,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     screening_results = []
 
     log_info("Fetching data for all repositories in Gitlab")
-    for i in targets.gitlab_repositories:
+    for i in targets.gitlab_projects:
         try:
             screening_results.append(gitlab_data_io.fetch_repository_details(i))
         except Exception as e:

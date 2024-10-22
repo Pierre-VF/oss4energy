@@ -61,7 +61,7 @@ def split_across_target_sets(
         else:
             others.append(i)
     return ParsingTargets(
-        gitlab_groups=groups, gitlab_repositories=projects, unknown=others
+        gitlab_groups=groups, gitlab_projects=projects, unknown=others
     )
 
 

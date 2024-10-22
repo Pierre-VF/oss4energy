@@ -2614,7 +2614,7 @@ groups = [
     "https://gitlab.com/project-catalyst",
     "https://gitlab.windenergy.dtu.dk/pyconturb",
 ]
-repositories = [
+projects = [
     "https://gitlab.awi.de/sicopolis/sicopolis",
     "https://gitlab.com/NRAP/OpenIAM",
     "https://gitlab.com/SmartGridToolbox/SmartGridToolbox",

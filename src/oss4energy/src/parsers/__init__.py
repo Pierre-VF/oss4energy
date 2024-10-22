@@ -82,7 +82,7 @@ class ParsingTargets:
 
     github_repositories: list[str] = field(default_factory=list)
     github_organisations: list[str] = field(default_factory=list)
-    gitlab_repositories: list[str] = field(default_factory=list)
+    gitlab_projects: list[str] = field(default_factory=list)
     gitlab_groups: list[str] = field(default_factory=list)
     unknown: list[str] = field(default_factory=list)
     invalid: list[str] = field(default_factory=list)
@@ -92,7 +92,7 @@ class ParsingTargets:
             github_organisations=self.github_organisations + other.github_organisations,
             github_repositories=self.github_repositories + other.github_repositories,
             gitlab_groups=self.gitlab_groups + other.gitlab_groups,
-            gitlab_repositories=self.gitlab_repositories + other.gitlab_repositories,
+            gitlab_projects=self.gitlab_projects + other.gitlab_projects,
             unknown=self.unknown + other.unknown,
             invalid=self.invalid + other.invalid,
         )
@@ -101,13 +101,13 @@ class ParsingTargets:
         self.github_repositories += other.github_repositories
         self.github_organisations += other.github_organisations
         self.gitlab_groups += other.gitlab_groups
-        self.gitlab_repositories += other.gitlab_repositories
+        self.gitlab_projects += other.gitlab_projects
         self.unknown += other.unknown
         self.invalid += other.invalid
         return self
 
     def as_url_list(self, known_repositories_only: bool = True) -> list[str]:
-        out = self.github_repositories + self.gitlab_repositories
+        out = self.github_repositories + self.gitlab_projects
         if not known_repositories_only:
             out += (
                 self.github_organisations
@@ -128,9 +128,7 @@ class ParsingTargets:
             self.github_organisations
         )
         self.gitlab_groups = sorted_list_of_unique_elements(self.gitlab_groups)
-        self.gitlab_repositories = sorted_list_of_unique_elements(
-            self.gitlab_repositories
-        )
+        self.gitlab_projects = sorted_list_of_unique_elements(self.gitlab_projects)
         self.unknown = sorted_list_of_unique_elements(self.unknown)
         self.invalid = sorted_list_of_unique_elements(self.invalid)
 
@@ -140,7 +138,7 @@ class ParsingTargets:
             in self.github_organisations
             + self.github_repositories
             + self.gitlab_groups
-            + self.gitlab_repositories
+            + self.gitlab_projects
         )
 
     def cleanup(self) -> None:
@@ -152,8 +150,8 @@ class ParsingTargets:
         self.github_repositories = [
             i for i in self.github_repositories if i not in self.github_organisations
         ]
-        self.gitlab_repositories = [
-            i for i in self.gitlab_repositories if i not in self.gitlab_groups
+        self.gitlab_projects = [
+            i for i in self.gitlab_projects if i not in self.gitlab_groups
         ]
         # Removing unknown repos
         self.unknown = [
@@ -175,7 +173,7 @@ class ParsingTargets:
             github_organisations=x["github_hosted"].get("organisations", []),
             github_repositories=x["github_hosted"].get("repositories", []),
             gitlab_groups=x["gitlab_hosted"].get("groups", []),
-            gitlab_repositories=x["gitlab_hosted"].get("repositories", []),
+            gitlab_projects=x["gitlab_hosted"].get("projects", []),
             unknown=x["dropped_targets"].get("urls", []),
             invalid=x["dropped_targets"].get("invalid_urls", []),
         )
@@ -193,7 +191,7 @@ class ParsingTargets:
             },
             "gitlab_hosted": {
                 "groups": self.gitlab_groups,
-                "repositories": self.gitlab_repositories,
+                "projects": self.gitlab_projects,
             },
             "dropped_targets": {
                 "urls": self.unknown,
