@@ -2612,6 +2612,7 @@ groups = [
     "https://gitlab.com/fame-framework",
     "https://gitlab.com/openlandmap",
     "https://gitlab.com/project-catalyst",
+    "https://gitlab.windenergy.dtu.dk/pyconturb",
 ]
 repositories = [
     "https://gitlab.awi.de/sicopolis/sicopolis",
@@ -2670,7 +2671,6 @@ repositories = [
     "https://gitlab.windenergy.dtu.dk/OpenLAC/BasicDTUController",
     "https://gitlab.windenergy.dtu.dk/TOPFARM/PyWake",
     "https://gitlab.windenergy.dtu.dk/TOPFARM/TopFarm2",
-    "https://gitlab.windenergy.dtu.dk/pyconturb",
     "https://gitlab.windenergy.dtu.dk/pyconturb/pyconturb",
     "https://gitlab.windenergy.dtu.dk/toolbox/WindEnergyToolbox",
 ]
