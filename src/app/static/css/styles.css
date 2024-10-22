@@ -74,3 +74,11 @@ details[open] {
     margin: 0 -1rem 1rem;
     padding: 0 1rem
 }
+
+table {
+    border-collapse: collapse;
+    border: 1px solid;
+}
+table, th, td {
+    border: 1px solid;
+}

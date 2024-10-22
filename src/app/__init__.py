@@ -4,8 +4,9 @@ FastAPI app to operate a search
 
 import pathlib
 from contextlib import asynccontextmanager
+from typing import Optional
 
-from fastapi import FastAPI, Path, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -60,7 +61,7 @@ async def search(request: Request):
 
 
 @app.get("/results", response_class=HTMLResponse)
-async def search_results(request: Request, query: str):
+async def search_results(request: Request, query: str, language: Optional[str] = None):
     res_desc = SEARCH_ENGINE_DESCRIPTIONS.search(query)
     res_readme = SEARCH_ENGINE_DESCRIPTIONS.search(query)
 
@@ -74,12 +75,19 @@ async def search_results(request: Request, query: str):
         )
         .fillna(0)
     )
-
     df_combined["score"] = df_combined["description"] * 10 + df_combined["readme"]
 
-    df_out = DOCUMENTS.drop(columns=["readme"]).merge(
+    # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
+    if language:
+        local_docs = DOCUMENTS[DOCUMENTS["language"] == language].drop(
+            columns=["readme"]
+        )
+    else:
+        local_docs = DOCUMENTS.drop(columns=["readme"])
+
+    df_out = local_docs.merge(
         df_combined[["score"]].sort_values(by="score", ascending=False),
-        how="right",
+        how="inner",
         left_on="url",
         right_index=True,
     )
@@ -87,7 +95,7 @@ async def search_results(request: Request, query: str):
         "results.html",
         {
             "request": request,
-            "results": df_out.head(100),
+            "results": df_out.head(100),  # TODO: for speed make this earlier on
             "query": query,
         },
     )
