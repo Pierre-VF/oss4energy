@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block heading %} Search Results: "{{ query }}"{% endblock %}
+
+{% block content %}
+<body>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Language</th>
+            <th>Score</th>
+        </tr>
+        {% for i, r in results.iterrows() %}
+            <tr>
+                <td><a href="{{ r['url'] }}">{{ r['name'] }}</a></td>
+                <td>{{ r['description'] }}</td>
+                <td>{{ r['language'] }}</td>
+                <td>{{ r['score'] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+{% endblock %}
