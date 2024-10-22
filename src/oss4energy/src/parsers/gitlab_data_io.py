@@ -37,7 +37,7 @@ class GitlabTargetType(Enum):
         n_slashes = processed.count("/")
         if n_slashes < 1:
             return GitlabTargetType.GROUP
-        elif n_slashes == 1:
+        elif n_slashes >= 1:
             # TODO : this is not good enough for sub-projects (but best quick fix for now)
             return GitlabTargetType.PROJECT
         else:
