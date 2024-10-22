@@ -11,6 +11,8 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 
+import requests
+
 from oss4energy.src.config import SETTINGS
 from oss4energy.src.log import log_info
 from oss4energy.src.model import ProjectDetails
@@ -108,9 +110,16 @@ def fetch_repositories_in_organisation(organisation_name: str) -> dict[str, str]
         organisation_name
     )
 
-    res = _web_get(
-        f"https://api.github.com/orgs/{organisation_name}/repos",
-    )
+    try:
+        res = _web_get(
+            f"https://api.github.com/orgs/{organisation_name}/repos",
+        )
+    except requests.exceptions.HTTPError:
+        # Where orgs do not work, one is potentially looking at a user instead
+        res = _web_get(
+            f"https://api.github.com/users/{organisation_name}/repos",
+        )
+
     return {r["name"]: r["html_url"] for r in res}
 
 
@@ -233,6 +242,7 @@ def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
 
 
 if __name__ == "__main__":
+    r = fetch_repositories_in_organisation("https://github.com/Pierre-VF/")
     test_repo = "https://github.com/yezz123/fastapi"  # "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
     r1 = fetch_repository_details(test_repo)
     r2 = fetch_repository_file_tree(test_repo)

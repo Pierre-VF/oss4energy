@@ -60,8 +60,8 @@ def _add_projects_to_listing_file(
         for i in new_targets.github_repositories
     ]
 
-    # Ensuring uniqueness in new targets
-    new_targets.ensure_sorted_and_unique_elements()
+    # Ensuring uniqueness in new targets and cleaning up redundancies
+    new_targets.cleanup()
 
     # Outputting to a new TOML
     log_info(f"Exporting new index to {file_path}")
@@ -148,6 +148,7 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             url2check = url2check[:-1]
         if url2check.count("/") > 1:
             log_info(f"SKIPPING repo {org_url}")
+            targets.github_repositories.append(org_url)  # Mapping it to repos instead
             continue  # Skip
 
         try:
@@ -157,11 +158,28 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
+    log_info("Fetching data for all groups in Gitlab")
+    for org_url in targets.gitlab_groups:
+        url2check = org_url.replace("https://", "")
+        if url2check.endswith("/"):
+            url2check = url2check[:-1]
+        if url2check.count("/") > 1:
+            log_info(f"SKIPPING repo {org_url}")
+            targets.gitlab_projects.append(org_url)  # Mapping it to repos instead
+            continue  # Skip
+
+        try:
+            x = gitlab_data_io.fetch_repositories_in_group(org_url)
+            [targets.gitlab_projects.append(i) for i in x.values()]
+        except Exception as e:
+            log_warning(f" > Error with organisation ({e})")
+            bad_organisations.append(org_url)
+
     targets.ensure_sorted_and_unique_elements()  # since elements were added
     screening_results = []
 
     log_info("Fetching data for all repositories in Gitlab")
-    for i in targets.gitlab_repositories:
+    for i in targets.gitlab_projects:
         try:
             screening_results.append(gitlab_data_io.fetch_repository_details(i))
         except Exception as e:
