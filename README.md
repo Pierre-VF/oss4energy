@@ -49,7 +49,7 @@ You have 2 options:
     > make install
 
 It is highly recommended to operate with a Github token (which you can create [here](https://github.com/settings/tokens/new)) 
-in order to avoid being blocked by Github's rate limit on the API. These are much lower for unauthenticated accounts.
+in order to avoid being blocked by Github's rate limit on the API. The same consideration applies to Gitlab (token generation [here](https://gitlab.com/-/user_settings/personal_access_tokens)). These are much lower for unauthenticated accounts.
 
 Make sure to generate this token with permissions to access public repositories.
 
