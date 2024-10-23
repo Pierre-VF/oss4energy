@@ -147,20 +147,32 @@ def _search_for_results(query: str) -> pd.DataFrame:
         )
         .fillna(0)
     )
-    df_combined["score"] = (
-        df_combined["description"] * 10 + df_combined["readme"]
-    ).round(1)
-    df_out = (
-        SEARCH_RESULTS.documents.drop(columns=["readme"])
-        .merge(
-            df_combined[["score"]],
-            how="inner",
-            left_on="url",
-            right_index=True,
-        )
-        .sort_values(by="score", ascending=False)
+
+    # Also checking for keywords in name
+    def _f_score_in_name(x):
+        kw = query.lower().split(" ")
+        res = 0
+        x_lower = x.lower()
+        for i in kw:
+            if len(i) > 3:  # To reduce noise (quick and dirty)
+                if i in x_lower:
+                    res += 1
+        return res
+
+    df_combined["score"] = df_combined["description"] * 10 + df_combined["readme"]
+    df_out = SEARCH_RESULTS.documents.drop(columns=["readme"]).merge(
+        df_combined[["score"]],
+        how="outer",
+        left_on="url",
+        right_index=True,
     )
-    return df_out
+
+    df_out["score"] = (
+        df_out["score"].fillna(0)
+        + df_out["name"].apply(_f_score_in_name) * 10
+        + df_out["organisation"].apply(_f_score_in_name) * 10
+    )
+    return df_out.query("score>0").sort_values(by="score", ascending=False)
 
 
 @app.get("/ui/results", response_class=HTMLResponse, include_in_schema=False)
