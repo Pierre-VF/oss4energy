@@ -2,8 +2,8 @@
 This module contains methods to discover new sources of code
 """
 
-from oss4energy.scripts import FILE_INPUT_INDEX, ParsingTargets, log_info
-from oss4energy.src.parsers.github_data_io import extract_repository_organisation
+from oss4climate.scripts import FILE_INPUT_INDEX, ParsingTargets, log_info
+from oss4climate.src.parsers.github_data_io import extract_repository_organisation
 
 
 def discover_repositories_in_existing_organisations(output_file: str) -> None:

@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from oss4energy.src.nlp.classifiers import tf_idf
+from oss4climate.src.nlp.classifiers import tf_idf
 
 
 def _lower_str(x: str, *args, **kwargs):

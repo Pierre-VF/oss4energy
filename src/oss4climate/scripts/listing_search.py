@@ -3,17 +3,17 @@ from urllib.request import urlretrieve
 
 import pandas as pd
 
-from oss4energy.scripts import (
+from oss4climate.scripts import (
     FILE_OUTPUT_DIR,
     FILE_OUTPUT_LISTING_CSV,
     FILE_OUTPUT_LISTING_FEATHER,
     FILE_OUTPUT_SUMMARY_TOML,
 )
-from oss4energy.src.nlp.search import SearchResults
+from oss4climate.src.nlp.search import SearchResults
 
 
 def download_data():
-    URL_BASE = "https://data.pierrevf.consulting/oss4energy"
+    URL_BASE = "https://data.pierrevf.consulting/oss4climate"
     URL_RAW_INDEX = f"{URL_BASE}/summary.toml"
     URL_LISTING_CSV = f"{URL_BASE}/listing_data.csv"
     URL_LISTING_FEATHER = f"{URL_BASE}/listing_data.feather"

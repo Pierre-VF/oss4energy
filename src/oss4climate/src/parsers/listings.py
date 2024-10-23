@@ -2,16 +2,16 @@
 Module parsing https://github.com/github/GreenSoftwareDirectory
 """
 
-from oss4energy.src.log import log_warning
-from oss4energy.src.parsers import (
+from oss4climate.src.log import log_warning
+from oss4climate.src.parsers import (
     ParsingTargets,
     ResourceListing,
     github_data_io,
 )
-from oss4energy.src.parsers import (
+from oss4climate.src.parsers import (
     fetch_all_project_urls_from_html_webpage as __fetch_from_webpage,
 )
-from oss4energy.src.parsers import (
+from oss4climate.src.parsers import (
     fetch_all_project_urls_from_markdown_str as __fetch_from_markdown_str,
 )
 

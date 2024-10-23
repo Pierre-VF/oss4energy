@@ -7,10 +7,10 @@ import os
 import pandas as pd
 from tomlkit import document, dump
 
-from oss4energy.src.helpers import sorted_list_of_unique_elements
-from oss4energy.src.log import log_info, log_warning
-from oss4energy.src.nlp.markdown_io import markdown_to_clean_plaintext
-from oss4energy.src.parsers import (
+from oss4climate.src.helpers import sorted_list_of_unique_elements
+from oss4climate.src.log import log_info, log_warning
+from oss4climate.src.nlp.markdown_io import markdown_to_clean_plaintext
+from oss4climate.src.parsers import (
     ParsingTargets,
     ResourceListing,
     github_data_io,
@@ -18,12 +18,12 @@ from oss4energy.src.parsers import (
     identify_parsing_targets,
     listings,
 )
-from oss4energy.src.parsers.lfenergy import (
+from oss4climate.src.parsers.lfenergy import (
     fetch_all_project_urls_from_lfe_webpage,
     fetch_project_github_urls_from_lfe_energy_project_webpage,
     get_open_source_energy_projects_from_landscape,
 )
-from oss4energy.src.parsers.opensustain_tech import (
+from oss4climate.src.parsers.opensustain_tech import (
     fetch_all_project_urls_from_opensustain_webpage,
     fetch_listing_of_listings_from_opensustain_webpage,
 )

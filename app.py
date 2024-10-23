@@ -16,13 +16,13 @@ from fastapi.templating import Jinja2Templates
 from tqdm import tqdm
 from uvicorn import run
 
-from oss4energy.scripts import (
+from oss4climate.scripts import (
     FILE_OUTPUT_LISTING_FEATHER,
     listing_search,
 )
-from oss4energy.src.log import log_info, log_warning
-from oss4energy.src.nlp.search import SearchResults
-from oss4energy.src.nlp.search_engine import SearchEngine
+from oss4climate.src.log import log_info, log_warning
+from oss4climate.src.nlp.search import SearchResults
+from oss4climate.src.nlp.search_engine import SearchEngine
 
 script_dir = pathlib.Path(__file__).resolve().parent
 templates_path = script_dir / "src/app/templates"

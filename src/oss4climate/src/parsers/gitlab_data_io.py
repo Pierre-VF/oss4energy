@@ -11,10 +11,10 @@ from enum import Enum
 from functools import lru_cache
 from urllib.parse import quote_plus, urlparse
 
-from oss4energy.src.config import SETTINGS
-from oss4energy.src.log import log_info
-from oss4energy.src.model import ProjectDetails
-from oss4energy.src.parsers import (
+from oss4climate.src.config import SETTINGS
+from oss4climate.src.log import log_info
+from oss4climate.src.model import ProjectDetails
+from oss4climate.src.parsers import (
     ParsingTargets,
     cached_web_get_json,
     cached_web_get_text,

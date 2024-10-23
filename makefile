@@ -1,6 +1,6 @@
 
 POETRY_VERSION := 1.8.3
-CLI_NAME := "oss4energy.cli"
+CLI_NAME := "oss4climate.cli"
 
 .PHONY: install
 install:
