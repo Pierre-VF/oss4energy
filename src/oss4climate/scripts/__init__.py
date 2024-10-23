@@ -203,17 +203,14 @@ def generate_listing(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
 
     df2export = df.drop(columns=["raw_details"])
     if target_output_file.endswith(".csv"):
-        df2export_csv = df.copy()
-        df2export_csv["readme"] = df2export_csv["readme"].apply(
-            markdown_to_clean_plaintext
-        )
-        df2export_csv.to_csv(target_output_file, sep=";")
+        # Dropping READMEs for CSV to look reasonable
+        df.drop(columns=["readme"]).to_csv(target_output_file, sep=";")
     elif target_output_file.endswith(".json"):
         df2export.T.to_json(target_output_file)
     else:
         raise ValueError(f"Unsupported file type for export: {target_output_file}")
 
-    # Exporting the file to HDF too (faster processing)
+    # Exporting the file to Feather too (faster processing)
     binary_target_output_file = target_output_file
     for i in ["csv", "json"]:
         binary_target_output_file = binary_target_output_file.replace(
