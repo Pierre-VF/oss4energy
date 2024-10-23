@@ -71,7 +71,10 @@ async def base_landing():
     return RedirectResponse("/ui/search", status_code=307)
 
 
-@app.get("/ui/search", response_class=HTMLResponse)
+# ----------------------------------------------------------------------------------
+# UI endpoints
+# ----------------------------------------------------------------------------------
+@app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
 async def search(request: Request):
     posts = SEARCH_ENGINE_DESCRIPTIONS.posts
     return templates.TemplateResponse(
@@ -118,7 +121,7 @@ def _search_for_results(query: str) -> pd.DataFrame:
     return df_out
 
 
-@app.get("/ui/results", response_class=HTMLResponse)
+@app.get("/ui/results", response_class=HTMLResponse, include_in_schema=False)
 async def search_results(
     request: Request,
     query: str,
@@ -175,9 +178,28 @@ async def search_results(
     )
 
 
-@app.get("/ui/about")
+@app.get("/ui/about", include_in_schema=False)
 def read_about(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
+
+
+# ----------------------------------------------------------------------------------
+# API endpoints
+# ----------------------------------------------------------------------------------
+
+# For now, only redirects
+
+
+@app.get("/api/code")
+async def api_code():
+    return RedirectResponse("https://github.com/Pierre-VF/oss4climate", status_code=307)
+
+
+@app.get("/api/data_csv")
+async def api_data():
+    return RedirectResponse(
+        "https://data.pierrevf.consulting/oss4climate/listing_data.csv", status_code=307
+    )
 
 
 if __name__ == "__main__":
