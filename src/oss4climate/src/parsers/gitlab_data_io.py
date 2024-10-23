@@ -142,7 +142,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     else:
         forked_from = None
     if "updated_at" in r:
-        latest_update = datetime.fromisoformat(r["updated_at"])
+        latest_update = datetime.fromisoformat(r["updated_at"]).date()
     else:
         latest_update = None
 
@@ -181,7 +181,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
 
 
 if __name__ == "__main__":
-    r0_forked = fetch_repository_details("https://gitlab.dune-project.org/dorie/dorie")
+    r0_forked = fetch_repository_details("https://gitlab.com/eaternity/eos")
 
     r00 = fetch_repositories_in_group("https://gitlab.com/polito-edyce-prelude")
     r1_forked = fetch_repository_details("https://gitlab.com/giacomo.chiesa/predyce")

@@ -31,7 +31,7 @@ def add():
 @app.command()
 def format():
     """Formats I/O files"""
-    scripts.format_files()
+    scripts.format_all_files()
 
 
 @app.command()
@@ -39,7 +39,7 @@ def discover():
     """Generates an index"""
     scripts.update_listing_of_listings()
     scripts.discover_projects()
-    scripts.format_files()
+    scripts.format_all_files()
 
 
 @app.command()

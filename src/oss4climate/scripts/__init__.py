@@ -30,14 +30,14 @@ FILE_OUTPUT_LISTING_FEATHER = f"{FILE_OUTPUT_DIR}/listing_data.feather"
 FILE_OUTPUT_SUMMARY_TOML = f"{FILE_OUTPUT_DIR}/summary.toml"
 
 
-def _format_individual_file(file_path: str) -> None:
+def format_individual_file(file_path: str) -> None:
     os.system(f"black {file_path}")
 
 
-def format_files():
-    _format_individual_file(FILE_INPUT_INDEX)
-    _format_individual_file(FILE_INPUT_LISTINGS_INDEX)
-    _format_individual_file(FILE_OUTPUT_SUMMARY_TOML)
+def format_all_files():
+    format_individual_file(FILE_INPUT_INDEX)
+    format_individual_file(FILE_INPUT_LISTINGS_INDEX)
+    format_individual_file(FILE_OUTPUT_SUMMARY_TOML)
 
 
 def _add_projects_to_listing_file(
@@ -62,7 +62,7 @@ def _add_projects_to_listing_file(
     new_targets.to_toml(file_path)
 
     # Format the file for human readability
-    _format_individual_file(file_path)
+    format_individual_file(file_path)
 
 
 def discover_projects(

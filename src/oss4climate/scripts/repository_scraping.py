@@ -3,9 +3,11 @@ from tomlkit import document, dump
 
 from oss4climate.scripts import (
     FILE_INPUT_INDEX,
+    FILE_OUTPUT_DIR,
     FILE_OUTPUT_LISTING_CSV,
     FILE_OUTPUT_SUMMARY_TOML,
-    format_files,
+    format_all_files,
+    format_individual_file,
 )
 from oss4climate.src.helpers import sorted_list_of_unique_elements
 from oss4climate.src.log import log_info, log_warning
@@ -33,6 +35,8 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
     targets = ParsingTargets.from_toml(FILE_INPUT_INDEX)
     targets.ensure_sorted_and_unique_elements()
 
+    scrape_failures = dict()
+
     bad_organisations = []
     bad_repositories = []
 
@@ -50,6 +54,7 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             x = github_data_io.fetch_repositories_in_organisation(org_url)
             [targets.github_repositories.append(i) for i in x.values()]
         except Exception as e:
+            scrape_failures["GITHUB_ORGANISATION:" + org_url] = e
             log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
@@ -67,6 +72,7 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
             x = gitlab_data_io.fetch_repositories_in_group(org_url)
             [targets.gitlab_projects.append(i) for i in x.values()]
         except Exception as e:
+            scrape_failures["GITLAB_GROUP:" + org_url] = e
             log_warning(f" > Error with organisation ({e})")
             bad_organisations.append(org_url)
 
@@ -78,6 +84,7 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
         try:
             screening_results.append(gitlab_data_io.fetch_repository_details(i))
         except Exception as e:
+            scrape_failures["GITLAB_PROJECT:" + i] = e
             log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
@@ -88,6 +95,7 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
                 continue
             screening_results.append(github_data_io.fetch_repository_details(i))
         except Exception as e:
+            scrape_failures["GITHUB_REPO:" + i] = e
             log_warning(f" > Error with repo ({e})")
             bad_repositories.append(i)
 
@@ -151,4 +159,16 @@ def scrape_all(target_output_file: str = FILE_OUTPUT_LISTING_CSV) -> None:
         
     """
     )
-    format_files()
+    format_all_files()
+
+    file_failures_toml = f"{FILE_OUTPUT_DIR}/failures_scraping.toml"
+    scrape_failures_as_jsonable_dict = {
+        str(k): str(v) for k, v in scrape_failures.items()
+    }
+    doc_failures = document()
+    doc_failures.add("failures", scrape_failures_as_jsonable_dict)
+    log_info(f"Exporting failures to {file_failures_toml}")
+    with open(file_failures_toml, "w") as fp:
+        dump(doc_failures, fp, sort_keys=True)
+    format_individual_file(file_failures_toml)
+    log_info("Done")
