@@ -139,7 +139,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     # Fields treated as optional or unstable across non-"gitlab.com" instances
     fork_details = r.get("forked_from_project")
     if isinstance(fork_details, dict):
-        forked_from = fork_details.get("namespace").get("web_url")
+        forked_from = fork_details.get("namespace", {}).get("web_url")
     else:
         forked_from = None
     if "updated_at" in r:
@@ -153,7 +153,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         last_commit = None
 
     n_open_prs = None
-    url_open_pr_raw = r.get("_links")
+    url_open_pr_raw = r.get("_links", {})
     if url_open_pr_raw:
         url_open_pr = url_open_pr_raw.get("merge_requests")
         if url_open_pr:
