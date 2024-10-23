@@ -2,17 +2,19 @@
 {% block heading %} Search among {{ posts|length }} open-source repositories {% endblock %}
 {% block content %}
 <body>
-    <form id="searchForm" method="post">
-        <label for="query">Enter your search query:</label><br/>
-        <input type="text" id="query" name="query" required><br/>
-        <button type="submit">Search</button>
-    </form>
+    <div class="center">
+        <form id="searchForm" method="post">
+            <label for="query">Enter your search query:</label>
+            <input type="text" id="query" name="query" required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
     <script>
         document.getElementById("searchForm").addEventListener("submit", function (event) {
             event.preventDefault();
             var queryValue = document.getElementById("query").value;
-            window.location.href = "/results?query=" + encodeURIComponent(queryValue);
+            window.location.href = "/ui/results?query=" + encodeURIComponent(queryValue);
         });
     </script>
 </body>

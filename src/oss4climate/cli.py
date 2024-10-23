@@ -5,7 +5,7 @@ CLI module
 import typer
 
 from oss4climate import scripts
-from oss4climate.scripts import data_publication, listing_search
+from oss4climate.scripts import data_publication, listing_search, repository_scraping
 
 app = typer.Typer()
 
@@ -31,7 +31,7 @@ def add():
 @app.command()
 def format():
     """Formats I/O files"""
-    scripts.format_files()
+    scripts.format_all_files()
 
 
 @app.command()
@@ -39,7 +39,7 @@ def discover():
     """Generates an index"""
     scripts.update_listing_of_listings()
     scripts.discover_projects()
-    scripts.format_files()
+    scripts.format_all_files()
 
 
 @app.command()
@@ -51,7 +51,7 @@ def publish():
 @app.command()
 def generate_listing():
     """Generates the updated listing"""
-    scripts.generate_listing()
+    repository_scraping.scrape_all()
 
 
 @app.command()

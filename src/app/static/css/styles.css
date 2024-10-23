@@ -8,7 +8,7 @@ body {
     line-height: 33px;
     margin: 7px;
     padding: 0;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 100px auto;
     padding: 0 1rem;
 }
@@ -76,9 +76,23 @@ details[open] {
 }
 
 table {
-    border-collapse: collapse;
+    border-collapse: collapse; 
     border: 1px solid;
 }
 table, th, td {
-    border: 1px solid;
+    border: none;
+    padding: 6px;
+    text-align: left;
+}
+td {
+    border-radius: 5px 5px 0px 0px;
+}
+th {
+    background-color: #31c40dd0;
+}
+tbody tr:nth-child(even) {
+    background-color: #dfe4952a;
+}
+tbody tr:nth-child(odd) {
+    background-color: #3aff3311;
 }

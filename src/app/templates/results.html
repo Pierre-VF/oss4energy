@@ -1,28 +1,42 @@
 {% extends "base.html" %}
-{% block heading %} Search Results: "{{ query }}"{% endblock %}
+{% block heading %} Search results for "{{ query }}"{% endblock %}
 
 {% block content %}
 <body>
     {% if n_total_found > n_found %}
-        <p>{{n_total_found}} results found (showing the {{ n_found }} first here):</p>
+        <p>{{n_total_found}} results found (showing only {{ n_found }} here):</p>
     {% else %}    
         <p>{{n_total_found}} results found:</p>
     {% endif %}
+
+    <p>
+        {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
+        {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
+    </p>
     <table>
         <tr>
             <th>Name</th>
             <th>Description</th>
             <th>Language</th>
-            <th>Score</th>
+            <th>License</th>
+            <th>Last commit</th>
         </tr>
         {% for i, r in results.iterrows() %}
             <tr>
-                <td><a href="{{ r['url'] }}">{{ r['name'] }}</a></td>
-                <td>{{ r['description'] }}</td>
-                <td>{{ r['language'] }}</td>
-                <td>{{ r['score'] }}</td>
+                <td><a href="{{ r.url }}">{{ r["name"] }}</a></td>
+                <td>{{ r.description }}</td>
+                <td>{{ r.language }}</td>
+                <td>{{ r.license }}</td>
+                <td>{{ r.last_commit }}</td>
             </tr>
         {% endfor %}
     </table>
+
+    
+    <p>
+        {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
+        {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
+    </p>
+    
 </body>
 {% endblock %}

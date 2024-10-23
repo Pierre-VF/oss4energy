@@ -2,7 +2,7 @@
 Module containing the models and enums for the mapping
 """
 
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel
@@ -16,7 +16,7 @@ class ProjectDetails(BaseModel):
     website: Optional[str]
     description: Optional[str]
     license: Optional[str]
-    latest_update: Optional[datetime]
+    latest_update: Optional[date]
     language: Optional[str]
     last_commit: Optional[date]
     open_pull_requests: Optional[int]
