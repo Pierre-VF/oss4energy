@@ -14,7 +14,7 @@
         document.getElementById("searchForm").addEventListener("submit", function (event) {
             event.preventDefault();
             var queryValue = document.getElementById("query").value;
-            window.location.href = "/results?query=" + encodeURIComponent(queryValue);
+            window.location.href = "/ui/results?query=" + encodeURIComponent(queryValue);
         });
     </script>
 </body>

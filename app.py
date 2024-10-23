@@ -13,7 +13,7 @@ from typing import Optional
 
 import pandas as pd
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from tqdm import tqdm
@@ -66,7 +66,12 @@ def get_top_urls(scores_dict: dict, n: int):
     return top_n_dict
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
+async def base_landing():
+    return RedirectResponse("/ui/search", status_code=307)
+
+
+@app.get("/ui/search", response_class=HTMLResponse)
 async def search(request: Request):
     posts = SEARCH_ENGINE_DESCRIPTIONS.posts
     return templates.TemplateResponse(
@@ -113,7 +118,7 @@ def _search_for_results(query: str) -> pd.DataFrame:
     return df_out
 
 
-@app.get("/results", response_class=HTMLResponse)
+@app.get("/ui/results", response_class=HTMLResponse)
 async def search_results(
     request: Request,
     query: str,
@@ -170,7 +175,7 @@ async def search_results(
     )
 
 
-@app.get("/about")
+@app.get("/ui/about")
 def read_about(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
 
