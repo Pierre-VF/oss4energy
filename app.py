@@ -8,8 +8,10 @@ import os
 import pathlib
 from contextlib import asynccontextmanager
 from datetime import date
+from functools import lru_cache
 from typing import Optional
 
+import pandas as pd
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -79,10 +81,9 @@ def _f_none_to_unknown(x: str | date | None) -> str:
         return str(x)
 
 
-@app.get("/results", response_class=HTMLResponse)
-async def search_results(
-    request: Request, query: str, language: Optional[str] = None, n_results: int = 100
-):
+@lru_cache(maxsize=10)
+def _search_for_results(query: str) -> pd.DataFrame:
+    print(f"Searching for {query}")
     res_desc = SEARCH_ENGINE_DESCRIPTIONS.search(query)
     res_readme = SEARCH_ENGINE_DESCRIPTIONS.search(query)
 
@@ -99,31 +100,59 @@ async def search_results(
     df_combined["score"] = (
         df_combined["description"] * 10 + df_combined["readme"]
     ).round(1)
+    df_out = (
+        SEARCH_RESULTS.documents.drop(columns=["readme"])
+        .merge(
+            df_combined[["score"]],
+            how="inner",
+            left_on="url",
+            right_index=True,
+        )
+        .sort_values(by="score", ascending=False)
+    )
+    return df_out
+
+
+@app.get("/results", response_class=HTMLResponse)
+async def search_results(
+    request: Request,
+    query: str,
+    language: Optional[str] = None,
+    n_results: int = 100,
+    offset: int | None = None,
+):
+    df_out = _search_for_results(query)
 
     # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
     if language:
-        docs = SEARCH_RESULTS.documents
-        local_docs = docs[docs["language"] == language].drop(columns=["readme"])
-    else:
-        local_docs = SEARCH_RESULTS.documents.drop(columns=["readme"])
+        df_out = df_out[df_out["language"] == language]
 
-    df_out = local_docs.merge(
-        df_combined[["score"]],
-        how="inner",
-        left_on="url",
-        right_index=True,
-    ).sort_values(by="score", ascending=False)
+    if offset is None:
+        df_shown = df_out.head(n_results)
+    else:
+        df_shown = df_out.iloc[offset : offset + n_results].copy()
 
     # Refining output
-    df_shown = df_out.head(n_results)  # TODO: for speed make this earlier on
-    df_shown.drop(
-        columns=["score"], inplace=True
-    )  # Dropping scores, as it's not informative to the user
+    df_shown = df_shown.drop(
+        columns=["score"]  # Dropping scores, as it's not informative to the user
+    )
     for i in ["license", "last_commit"]:
-        df_shown[i] = df_shown[i].apply(_f_none_to_unknown)
+        df_shown.loc[:, i] = df_shown[i].apply(_f_none_to_unknown)
 
     n_found = len(df_shown)
     n_total_found = len(df_out)
+
+    # URLs
+    current_url = f"results?query={query}&n_results={n_results}"
+    if language:
+        current_url = f"{current_url}&language={language}"
+    current_offset = 0 if offset is None else offset
+
+    url_previous = f"{current_url}&offset={current_offset - n_results - 1}"
+    url_next = f"{current_url}&offset={current_offset + n_results + 1}"
+
+    show_previous = current_offset > 0
+    show_next = current_offset <= (n_total_found - n_results)
 
     return templates.TemplateResponse(
         "results.html",
@@ -133,6 +162,10 @@ async def search_results(
             "n_total_found": n_total_found,
             "results": df_shown,
             "query": query,
+            "url_previous": url_previous,
+            "url_next": url_next,
+            "show_previous": show_previous,
+            "show_next": show_next,
         },
     )
 
