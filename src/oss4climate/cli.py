@@ -5,7 +5,7 @@ CLI module
 import typer
 
 from oss4climate import scripts
-from oss4climate.scripts import data_publication, listing_search
+from oss4climate.scripts import data_publication, listing_search, repository_scraping
 
 app = typer.Typer()
 
@@ -51,7 +51,7 @@ def publish():
 @app.command()
 def generate_listing():
     """Generates the updated listing"""
-    scripts.generate_listing()
+    repository_scraping.scrape_all()
 
 
 @app.command()
