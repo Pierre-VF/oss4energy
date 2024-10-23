@@ -126,11 +126,12 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     gitlab_host = _extract_gitlab_host(url=repo_path)
     repo_id = _extract_organisation_and_repository_as_url_block(repo_path)
     r = _web_get(
-        f"https://{gitlab_host}/api/v4/projects/{quote_plus(repo_id)}", is_json=True
+        f"https://{gitlab_host}/api/v4/projects/{quote_plus(repo_id)}?license=yes",
+        is_json=True,
     )
-
-    organisation = r["namespace"]["name"]
-    license = "?"  # TODO : need to find how to parse the licence of a project
+    # organisation_url = f"https://{gitlab_host}/{repo_id.split('/')[0]}"
+    organisation = repo_id.split("/")[0]
+    license = r.get("license", {}).get("name")
 
     url_readme_file = r["readme_url"].replace("/blob/", "/raw/") + "?inline=false"
     readme = _web_get(url_readme_file, with_headers=False, is_json=False)
@@ -138,7 +139,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
     # Fields treated as optional or unstable across non-"gitlab.com" instances
     fork_details = r.get("forked_from_project")
     if isinstance(fork_details, dict):
-        forked_from = fork_details.get("namespace").get("web_url")
+        forked_from = fork_details.get("namespace", {}).get("web_url")
     else:
         forked_from = None
     if "updated_at" in r:
@@ -152,7 +153,7 @@ def fetch_repository_details(repo_path: str) -> ProjectDetails:
         last_commit = None
 
     n_open_prs = None
-    url_open_pr_raw = r.get("_links")
+    url_open_pr_raw = r.get("_links", {})
     if url_open_pr_raw:
         url_open_pr = url_open_pr_raw.get("merge_requests")
         if url_open_pr:

@@ -34,6 +34,9 @@ SEARCH_ENGINE_DESCRIPTIONS = SearchEngine()
 SEARCH_ENGINE_READMES = SearchEngine()
 SEARCH_RESULTS = SearchResults()
 
+# Configuration (for avoidance of information duplication)
+URL_CODE_REPOSITORY = "https://github.com/Pierre-VF/oss4climate/"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -74,12 +77,6 @@ async def base_landing():
 # ----------------------------------------------------------------------------------
 # UI endpoints
 # ----------------------------------------------------------------------------------
-@app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
-async def search(request: Request):
-    posts = SEARCH_ENGINE_DESCRIPTIONS.posts
-    return templates.TemplateResponse(
-        "search.html", {"request": request, "posts": posts}
-    )
 
 
 def _f_none_to_unknown(x: str | date | None) -> str:
@@ -89,8 +86,53 @@ def _f_none_to_unknown(x: str | date | None) -> str:
         return str(x)
 
 
+@lru_cache(maxsize=1)
+def _unique_licenses() -> list[str]:
+    x = SEARCH_RESULTS.documents["license"].apply(_f_none_to_unknown).unique()
+    x.sort()
+    return x.tolist()
+
+
+@lru_cache(maxsize=1)
+def _unique_languages() -> list[str]:
+    x = SEARCH_RESULTS.documents["language"].apply(_f_none_to_unknown).unique()
+    x.sort()
+    return x.tolist()
+
+
+def _render_template(request: Request, template_file: str, content: dict | None = None):
+    resp = {"request": request, "URL_CODE_REPOSITORY": URL_CODE_REPOSITORY}
+    if content is not None:
+        resp = resp | content
+    return templates.TemplateResponse(template_file, resp)
+
+
+@lru_cache(maxsize=1)
+def n_repositories_indexed():
+    return SEARCH_RESULTS.n_documents
+
+
+@app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
+async def search(request: Request):
+    return _render_template(
+        request=request,
+        template_file="search.html",
+        content={
+            "n_repositories_indexed": n_repositories_indexed(),
+            "languages": _unique_languages(),
+            "licenses": _unique_licenses(),
+            "free_text": " ",
+        },
+    )
+
+
 @lru_cache(maxsize=10)
 def _search_for_results(query: str) -> pd.DataFrame:
+    if len(query) < 1:
+        df_x = SEARCH_RESULTS.documents.drop(columns=["readme"])
+        df_x["score"] = 1
+        return df_x
+
     print(f"Searching for {query}")
     res_desc = SEARCH_ENGINE_DESCRIPTIONS.search(query)
     res_readme = SEARCH_ENGINE_DESCRIPTIONS.search(query)
@@ -105,20 +147,32 @@ def _search_for_results(query: str) -> pd.DataFrame:
         )
         .fillna(0)
     )
-    df_combined["score"] = (
-        df_combined["description"] * 10 + df_combined["readme"]
-    ).round(1)
-    df_out = (
-        SEARCH_RESULTS.documents.drop(columns=["readme"])
-        .merge(
-            df_combined[["score"]],
-            how="inner",
-            left_on="url",
-            right_index=True,
-        )
-        .sort_values(by="score", ascending=False)
+
+    # Also checking for keywords in name
+    def _f_score_in_name(x):
+        kw = query.lower().split(" ")
+        res = 0
+        x_lower = x.lower()
+        for i in kw:
+            if len(i) > 3:  # To reduce noise (quick and dirty)
+                if i in x_lower:
+                    res += 1
+        return res
+
+    df_combined["score"] = df_combined["description"] * 10 + df_combined["readme"]
+    df_out = SEARCH_RESULTS.documents.drop(columns=["readme"]).merge(
+        df_combined[["score"]],
+        how="outer",
+        left_on="url",
+        right_index=True,
     )
-    return df_out
+
+    df_out["score"] = (
+        df_out["score"].fillna(0)
+        + df_out["name"].apply(_f_score_in_name) * 10
+        + df_out["organisation"].apply(_f_score_in_name) * 10
+    )
+    return df_out.query("score>0").sort_values(by="score", ascending=False)
 
 
 @app.get("/ui/results", response_class=HTMLResponse, include_in_schema=False)
@@ -126,14 +180,17 @@ async def search_results(
     request: Request,
     query: str,
     language: Optional[str] = None,
+    license: Optional[str] = None,
     n_results: int = 100,
     offset: int | None = None,
 ):
-    df_out = _search_for_results(query)
+    df_out = _search_for_results(query.strip())
 
     # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
-    if language:
+    if language and (language != "*"):
         df_out = df_out[df_out["language"] == language]
+    if license and (license != "*"):
+        df_out = df_out[df_out["license"] == license]
 
     if offset is None:
         df_shown = df_out.head(n_results)
@@ -154,6 +211,8 @@ async def search_results(
     current_url = f"results?query={query}&n_results={n_results}"
     if language:
         current_url = f"{current_url}&language={language}"
+    if license:
+        current_url = f"{current_url}&license={license}"
     current_offset = 0 if offset is None else offset
 
     url_previous = f"{current_url}&offset={current_offset - n_results - 1}"
@@ -162,9 +221,10 @@ async def search_results(
     show_previous = current_offset > 0
     show_next = current_offset <= (n_total_found - n_results)
 
-    return templates.TemplateResponse(
-        "results.html",
-        {
+    return _render_template(
+        request=request,
+        template_file="results.html",
+        content={
             "request": request,
             "n_found": n_found,
             "n_total_found": n_total_found,
@@ -180,7 +240,10 @@ async def search_results(
 
 @app.get("/ui/about", include_in_schema=False)
 def read_about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+    return _render_template(
+        request=request,
+        template_file="about.html",
+    )
 
 
 # ----------------------------------------------------------------------------------
@@ -192,7 +255,7 @@ def read_about(request: Request):
 
 @app.get("/api/code")
 async def api_code():
-    return RedirectResponse("https://github.com/Pierre-VF/oss4climate", status_code=307)
+    return RedirectResponse(URL_CODE_REPOSITORY, status_code=307)
 
 
 @app.get("/api/data_csv")
