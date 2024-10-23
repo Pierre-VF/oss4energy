@@ -3,40 +3,49 @@
 
 {% block content %}
 <body>
-    {% if n_total_found > n_found %}
-        <p>{{n_total_found}} results found (showing only {{ n_found }} here):</p>
-    {% else %}    
-        <p>{{n_total_found}} results found:</p>
-    {% endif %}
+    {% if n_total_found < 1 %}
+        <p>
+            No results found matching your query (this might be due to the restrictions of the methodology, 
+            see <a href="/ui/about">details here</a>). 
+            If you specified a license or language, you might also want to rerun the query without these filters.
+        </p>
 
-    <p>
-        {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
-        {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
-    </p>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Language</th>
-            <th>License</th>
-            <th>Last commit</th>
-        </tr>
-        {% for i, r in results.iterrows() %}
+    {% else %} 
+        {% if n_total_found > n_found %}
+            <p>{{n_total_found}} results found (showing only {{ n_found }} here):</p>
+        {% else %}    
+            <p>{{n_total_found}} results found:</p>
+        {% endif %}
+
+        <p>
+            {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
+            {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
+        </p>
+        <table>
             <tr>
-                <td><a href="{{ r.url }}">{{ r["name"] }}</a></td>
-                <td>{{ r.description }}</td>
-                <td>{{ r.language }}</td>
-                <td>{{ r.license }}</td>
-                <td>{{ r.last_commit }}</td>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Language</th>
+                <th>License</th>
+                <th>Last commit</th>
             </tr>
-        {% endfor %}
-    </table>
+            {% for i, r in results.iterrows() %}
+                <tr>
+                    <td><a href="{{ r.url }}">{{ r["name"] }}</a></td>
+                    <td>{{ r.description }}</td>
+                    <td>{{ r.language }}</td>
+                    <td>{{ r.license }}</td>
+                    <td>{{ r.last_commit }}</td>
+                </tr>
+            {% endfor %}
+        </table>
 
-    
-    <p>
-        {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
-        {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
-    </p>
+        
+        <p>
+            {% if show_previous %}<a href="{{ url_previous }}">Previous << </a>{% endif %} 
+            {% if show_next %}<a href="{{ url_next }}">>> Next</a>{% endif %}
+        </p>
+    {% endif %}
     
 </body>
 {% endblock %}
