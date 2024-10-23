@@ -5,13 +5,13 @@ Parser for LF Energy projects
 import yaml
 from bs4 import BeautifulSoup
 
-from oss4energy.src.parsers import (
+from oss4climate.src.parsers import (
     ParsingTargets,
     cached_web_get_text,
     identify_parsing_targets,
 )
-from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
-from oss4energy.src.parsers.gitlab_data_io import GITLAB_ANY_URL_PREFIX
+from oss4climate.src.parsers.github_data_io import GITHUB_URL_BASE
+from oss4climate.src.parsers.gitlab_data_io import GITLAB_ANY_URL_PREFIX
 
 _PROJECT_PAGE_URL_BASE = "https://lfenergy.org/projects/"
 

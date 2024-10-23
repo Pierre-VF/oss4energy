@@ -1,5 +1,5 @@
-from oss4energy.src.parsers import ParsingTargets
-from oss4energy.src.parsers.github_data_io import (
+from oss4climate.src.parsers import ParsingTargets
+from oss4climate.src.parsers.github_data_io import (
     ProjectDetails,
     fetch_repositories_in_organisation,
     fetch_repository_details,

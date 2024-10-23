@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-from oss4energy.src.config import SETTINGS
+from oss4climate.src.config import SETTINGS
 
 
 # -------------------------------------------------------------------------------------

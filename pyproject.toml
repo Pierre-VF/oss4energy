@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "oss4energy"
+name = "oss4climate"
 version = "0.0.0"
 description = "Package to create listings of Open Source for Energy"
 authors = ["Pierre VF"]
 packages = [
-    {include = "oss4energy", from = "src"}
+    {include = "oss4climate", from = "src"}
 ]
 package-mode = true
 

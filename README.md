@@ -6,13 +6,13 @@ A first search prototype is available here: https://oss4climate.pierrevf.consult
 
 The raw datasets are published here (nice layout has not been made yet):
 
-- [Raw index](https://data.pierrevf.consulting/oss4energy/summary.toml)
-- [Listing as CSV](https://data.pierrevf.consulting/oss4energy/listing_data.csv)
+- [Raw index](https://data.pierrevf.consulting/oss4climate/summary.toml)
+- [Listing as CSV](https://data.pierrevf.consulting/oss4climate/listing_data.csv)
 
 Input to the discovery process are given here (you are welcome to add your own contribution):
 - the listings scraped are listed in **listing_index.toml** 
 - repositories found in the listings and added manually are found in **repo_index.toml**  
-- the associated scrapers in the folder **"src/oss4energy/src/parsers"**
+- the associated scrapers in the folder **"src/oss4climate/src/parsers"**
 
 Other mapping initiatives that you may want to consider looking at (all the repositories that these linked to have been indexed here):
 
@@ -33,7 +33,7 @@ The vision is that this project should provide a list of open-source software fo
 
 All of this should be provided in a way that makes it easy to search and interface to (e.g. with a structured machine-readable registry).
 
-However, in the current stage it is indeed not providing all of these features yet. Help is appreciated to get there (see [open issues](https://github.com/Pierre-VF/oss4energy/issues)).
+However, in the current stage it is indeed not providing all of these features yet. Help is appreciated to get there (see [open issues](https://github.com/Pierre-VF/oss4climate/issues)).
 
 
 ## Installation
@@ -99,6 +99,6 @@ Note: the indexing is heavy and involves a series of web (and API) calls. A cach
 
 ## Need new features or found a bug?
 
-Please open an issue on the repository [here](https://github.com/Pierre-VF/oss4energy/issues).
+Please open an issue on the repository [here](https://github.com/Pierre-VF/oss4climate/issues).
 
 If you have a use-case that you would like to develop based upon this, or need new features, please get in touch with [PierreVF Consulting](https://www.pierrevf.consulting/) for support.

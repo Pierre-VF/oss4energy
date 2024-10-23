@@ -4,7 +4,7 @@ Module parsing https://opensustain.tech/
 
 from bs4 import BeautifulSoup
 
-from oss4energy.src.parsers import (
+from oss4climate.src.parsers import (
     ParsingTargets,
     ResourceListing,
     cached_web_get_text,
@@ -12,7 +12,7 @@ from oss4energy.src.parsers import (
     gitlab_data_io,
     isolate_relevant_urls,
 )
-from oss4energy.src.parsers import (
+from oss4climate.src.parsers import (
     fetch_all_project_urls_from_html_webpage as __fetch_from_html,
 )
 

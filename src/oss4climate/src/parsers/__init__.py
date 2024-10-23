@@ -11,9 +11,9 @@ import tomllib
 from bs4 import BeautifulSoup
 from tomlkit import document, dump
 
-from oss4energy.src.database import load_from_database, save_to_database
-from oss4energy.src.helpers import sorted_list_of_unique_elements
-from oss4energy.src.log import log_info
+from oss4climate.src.database import load_from_database, save_to_database
+from oss4climate.src.helpers import sorted_list_of_unique_elements
+from oss4climate.src.log import log_info
 
 WEB_SESSION = requests.Session()
 
@@ -207,7 +207,7 @@ class ParsingTargets:
 
 
 def identify_parsing_targets(x: list[str]) -> ParsingTargets:
-    from oss4energy.src.parsers import github_data_io, gitlab_data_io
+    from oss4climate.src.parsers import github_data_io, gitlab_data_io
 
     out_github = github_data_io.split_across_target_sets(x)
     out_gitlab = gitlab_data_io.split_across_target_sets(out_github.unknown)
@@ -218,8 +218,8 @@ def identify_parsing_targets(x: list[str]) -> ParsingTargets:
 
 
 def isolate_relevant_urls(urls: list[str]) -> list[str]:
-    from oss4energy.src.parsers.github_data_io import GITHUB_URL_BASE
-    from oss4energy.src.parsers.gitlab_data_io import GITLAB_ANY_URL_PREFIX
+    from oss4climate.src.parsers.github_data_io import GITHUB_URL_BASE
+    from oss4climate.src.parsers.gitlab_data_io import GITLAB_ANY_URL_PREFIX
 
     def __f(i) -> bool:
         if i.startswith(GITHUB_URL_BASE):

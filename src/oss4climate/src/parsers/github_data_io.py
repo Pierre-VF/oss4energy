@@ -13,10 +13,10 @@ from functools import lru_cache
 
 import requests
 
-from oss4energy.src.config import SETTINGS
-from oss4energy.src.log import log_info
-from oss4energy.src.model import ProjectDetails
-from oss4energy.src.parsers import (
+from oss4climate.src.config import SETTINGS
+from oss4climate.src.log import log_info
+from oss4climate.src.model import ProjectDetails
+from oss4climate.src.parsers import (
     ParsingTargets,
     cached_web_get_json,
     cached_web_get_text,
@@ -243,7 +243,7 @@ def fetch_repository_file_tree(repository_url: str) -> list[str] | str:
 
 if __name__ == "__main__":
     r = fetch_repositories_in_organisation("https://github.com/Pierre-VF/")
-    test_repo = "https://github.com/yezz123/fastapi"  # "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4energy/"
+    test_repo = "https://github.com/yezz123/fastapi"  # "https://github.com/fastapi/fastapi"  # "https://github.com/Pierre-VF/oss4climate/"
     r1 = fetch_repository_details(test_repo)
     r2 = fetch_repository_file_tree(test_repo)
     print("Done")

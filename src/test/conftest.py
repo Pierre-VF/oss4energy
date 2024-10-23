@@ -4,7 +4,7 @@ import pytest
 # Github fixtures
 @pytest.fixture
 def github_repo_url() -> str:
-    return "https://github.com/Pierre-VF/oss4energy"
+    return "https://github.com/Pierre-VF/oss4climate"
 
 
 @pytest.fixture

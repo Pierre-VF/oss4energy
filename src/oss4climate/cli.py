@@ -4,8 +4,8 @@ CLI module
 
 import typer
 
-from oss4energy import scripts
-from oss4energy.scripts import data_publication, listing_search
+from oss4climate import scripts
+from oss4climate.scripts import data_publication, listing_search
 
 app = typer.Typer()
 

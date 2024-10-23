@@ -95,10 +95,10 @@ class SearchEngine:
 if __name__ == "__main__":
     from tqdm import tqdm
 
-    from oss4energy.scripts import (
+    from oss4climate.scripts import (
         FILE_OUTPUT_LISTING_FEATHER,
     )
-    from oss4energy.src.nlp.search import SearchResults
+    from oss4climate.src.nlp.search import SearchResults
 
     x = SearchResults(FILE_OUTPUT_LISTING_FEATHER)
     df = x.documents

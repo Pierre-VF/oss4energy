@@ -1,13 +1,13 @@
 import os
 from ftplib import FTP
 
-from oss4energy.scripts import (
+from oss4climate.scripts import (
     FILE_OUTPUT_LISTING_CSV,
     FILE_OUTPUT_LISTING_FEATHER,
     FILE_OUTPUT_SUMMARY_TOML,
 )
-from oss4energy.src.config import SETTINGS
-from oss4energy.src.log import log_info
+from oss4climate.src.config import SETTINGS
+from oss4climate.src.log import log_info
 
 
 def publish_to_ftp() -> None:
@@ -40,10 +40,10 @@ def publish_to_ftp() -> None:
         passwd=SETTINGS.EXPORT_FTP_PASSWORD,
     ) as ftp:
         try:
-            ftp.mkd("oss4energy")
+            ftp.mkd("oss4climate")
         except:
             pass
-        ftp.cwd("oss4energy")
+        ftp.cwd("oss4climate")
         for i in files_out:
             with open(i, "rb") as fp:
                 log_info(f"Uploading {i}")
