@@ -4,11 +4,9 @@ CLI_NAME := "oss4climate.cli"
 
 .PHONY: install
 install:
-	pip install pipx
-	pipx ensurepath
-	pipx install poetry==$(POETRY_VERSION) || echo "Poetry already installed"
-	poetry config virtualenvs.create true 
-	poetry install --no-cache
+	curl -LsSf https://astral.sh/uv/install.sh | sh
+	source $HOME/.cargo/env
+	uv sync
 	python -m spacy download en_core_web_sm || echo "Failed download of Spacy model"
 	
 .PHONY: install_dev
