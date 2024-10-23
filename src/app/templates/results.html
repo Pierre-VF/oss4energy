@@ -13,14 +13,16 @@
             <th>Name</th>
             <th>Description</th>
             <th>Language</th>
-            <th>Score</th>
+            <th>License</th>
+            <th>Last commit</th>
         </tr>
         {% for i, r in results.iterrows() %}
             <tr>
-                <td><a href="{{ r['url'] }}">{{ r['name'] }}</a></td>
-                <td>{{ r['description'] }}</td>
-                <td>{{ r['language'] }}</td>
-                <td>{{ r['score'] }}</td>
+                <td><a href="{{ r.url }}">{{ r.name }}</a></td>
+                <td>{{ r.description }}</td>
+                <td>{{ r.language }}</td>
+                <td>{{ r.license }}</td>
+                <td>{{ r.last_commit }}</td>
             </tr>
         {% endfor %}
     </table>

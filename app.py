@@ -7,6 +7,7 @@ Note: heavily inspired from https://github.com/alexmolas/microsearch/
 import os
 import pathlib
 from contextlib import asynccontextmanager
+from datetime import date
 from typing import Optional
 
 from fastapi import FastAPI, Request
@@ -71,6 +72,13 @@ async def search(request: Request):
     )
 
 
+def _f_none_to_unknown(x: str | date | None) -> str:
+    if x is None:
+        return "(unknown)"
+    else:
+        return str(x)
+
+
 @app.get("/results", response_class=HTMLResponse)
 async def search_results(
     request: Request, query: str, language: Optional[str] = None, n_results: int = 100
@@ -105,9 +113,18 @@ async def search_results(
         left_on="url",
         right_index=True,
     ).sort_values(by="score", ascending=False)
+
+    # Refining output
     df_shown = df_out.head(n_results)  # TODO: for speed make this earlier on
+    df_shown.drop(
+        columns=["score"], inplace=True
+    )  # Dropping scores, as it's not informative to the user
+    for i in ["license", "last_commit"]:
+        df_shown[i] = df_shown[i].apply(_f_none_to_unknown)
+
     n_found = len(df_shown)
     n_total_found = len(df_out)
+
     return templates.TemplateResponse(
         "results.html",
         {
