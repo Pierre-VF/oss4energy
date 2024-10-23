@@ -5,7 +5,27 @@
     <div class="center">
         <form id="searchForm" method="post">
             <label for="query">Enter your search query:</label>
-            <input type="text" id="query" name="query" required>
+            <input type="text" id="query" name="query" value="">
+            <br/>
+
+            <label for="license">License:</label>
+            <select name="license" id="license">
+                <option value="*">(Any)</option>                
+                {% for i in licenses %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <br/>
+            
+            <label for="language">Language:</label>
+            <select name="language" id="language">
+                <option value="*">(Any)</option>                
+                {% for i in languages %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <br/>
+
             <button type="submit">Search</button>
         </form>
     </div>
@@ -14,9 +34,13 @@
         document.getElementById("searchForm").addEventListener("submit", function (event) {
             event.preventDefault();
             var queryValue = document.getElementById("query").value;
-            window.location.href = "/ui/results?query=" + encodeURIComponent(queryValue);
+            var licenseValue = document.getElementById("license").value;
+            var languageValue = document.getElementById("language").value;
+            window.location.href = "/ui/results?query=" + encodeURIComponent(queryValue) + "&license=" + encodeURIComponent(licenseValue) + "&language=" + encodeURIComponent(languageValue);
         });
     </script>
+
+    <p>{{ free_text }}</p>
 </body>
 </html>
 {% endblock %}

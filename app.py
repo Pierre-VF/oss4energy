@@ -77,25 +77,6 @@ async def base_landing():
 # ----------------------------------------------------------------------------------
 # UI endpoints
 # ----------------------------------------------------------------------------------
-def render_template(request: Request, template_file: str, content: dict | None = None):
-    resp = {"request": request, "URL_CODE_REPOSITORY": URL_CODE_REPOSITORY}
-    if content is not None:
-        resp = resp | content
-    return templates.TemplateResponse(template_file, content)
-
-
-@lru_cache(maxsize=1)
-def n_repositories_indexed():
-    return SEARCH_RESULTS.n_documents
-
-
-@app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
-async def search(request: Request):
-    return render_template(
-        request=request,
-        template_file="search.html",
-        content={"n_repositories_indexed": n_repositories_indexed()},
-    )
 
 
 def _f_none_to_unknown(x: str | date | None) -> str:
@@ -105,8 +86,53 @@ def _f_none_to_unknown(x: str | date | None) -> str:
         return str(x)
 
 
+@lru_cache(maxsize=1)
+def _unique_licenses() -> list[str]:
+    x = SEARCH_RESULTS.documents["license"].apply(_f_none_to_unknown).unique()
+    x.sort()
+    return x.tolist()
+
+
+@lru_cache(maxsize=1)
+def _unique_languages() -> list[str]:
+    x = SEARCH_RESULTS.documents["language"].apply(_f_none_to_unknown).unique()
+    x.sort()
+    return x.tolist()
+
+
+def _render_template(request: Request, template_file: str, content: dict | None = None):
+    resp = {"request": request, "URL_CODE_REPOSITORY": URL_CODE_REPOSITORY}
+    if content is not None:
+        resp = resp | content
+    return templates.TemplateResponse(template_file, resp)
+
+
+@lru_cache(maxsize=1)
+def n_repositories_indexed():
+    return SEARCH_RESULTS.n_documents
+
+
+@app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
+async def search(request: Request):
+    return _render_template(
+        request=request,
+        template_file="search.html",
+        content={
+            "n_repositories_indexed": n_repositories_indexed(),
+            "languages": _unique_languages(),
+            "licenses": _unique_licenses(),
+            "free_text": " ",
+        },
+    )
+
+
 @lru_cache(maxsize=10)
 def _search_for_results(query: str) -> pd.DataFrame:
+    if len(query) < 1:
+        df_x = SEARCH_RESULTS.documents.drop(columns=["readme"])
+        df_x["score"] = 1
+        return df_x
+
     print(f"Searching for {query}")
     res_desc = SEARCH_ENGINE_DESCRIPTIONS.search(query)
     res_readme = SEARCH_ENGINE_DESCRIPTIONS.search(query)
@@ -142,14 +168,17 @@ async def search_results(
     request: Request,
     query: str,
     language: Optional[str] = None,
+    license: Optional[str] = None,
     n_results: int = 100,
     offset: int | None = None,
 ):
-    df_out = _search_for_results(query)
+    df_out = _search_for_results(query.strip())
 
     # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
-    if language:
+    if language and (language != "*"):
         df_out = df_out[df_out["language"] == language]
+    if license and (license != "*"):
+        df_out = df_out[df_out["license"] == license]
 
     if offset is None:
         df_shown = df_out.head(n_results)
@@ -170,6 +199,8 @@ async def search_results(
     current_url = f"results?query={query}&n_results={n_results}"
     if language:
         current_url = f"{current_url}&language={language}"
+    if license:
+        current_url = f"{current_url}&license={license}"
     current_offset = 0 if offset is None else offset
 
     url_previous = f"{current_url}&offset={current_offset - n_results - 1}"
@@ -178,7 +209,7 @@ async def search_results(
     show_previous = current_offset > 0
     show_next = current_offset <= (n_total_found - n_results)
 
-    return render_template(
+    return _render_template(
         request=request,
         template_file="results.html",
         content={
@@ -197,7 +228,7 @@ async def search_results(
 
 @app.get("/ui/about", include_in_schema=False)
 def read_about(request: Request):
-    return render_template(
+    return _render_template(
         request=request,
         template_file="about.html",
     )
