@@ -74,11 +74,18 @@ async def base_landing():
 # ----------------------------------------------------------------------------------
 # UI endpoints
 # ----------------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=1)
+def n_repositories_indexed():
+    return SEARCH_RESULTS.n_documents
+
+
 @app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
 async def search(request: Request):
-    posts = SEARCH_ENGINE_DESCRIPTIONS.posts
     return templates.TemplateResponse(
-        "search.html", {"request": request, "posts": posts}
+        "search.html",
+        {"request": request, "n_repositories_indexed": n_repositories_indexed()},
     )
 
 
