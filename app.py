@@ -34,6 +34,9 @@ SEARCH_ENGINE_DESCRIPTIONS = SearchEngine()
 SEARCH_ENGINE_READMES = SearchEngine()
 SEARCH_RESULTS = SearchResults()
 
+# Configuration (for avoidance of information duplication)
+URL_CODE_REPOSITORY = "https://github.com/Pierre-VF/oss4climate/"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -74,6 +77,11 @@ async def base_landing():
 # ----------------------------------------------------------------------------------
 # UI endpoints
 # ----------------------------------------------------------------------------------
+def render_template(request: Request, template_file: str, content: dict | None = None):
+    resp = {"request": request, "URL_CODE_REPOSITORY": URL_CODE_REPOSITORY}
+    if content is not None:
+        resp = resp | content
+    return templates.TemplateResponse(template_file, content)
 
 
 @lru_cache(maxsize=1)
@@ -83,9 +91,10 @@ def n_repositories_indexed():
 
 @app.get("/ui/search", response_class=HTMLResponse, include_in_schema=False)
 async def search(request: Request):
-    return templates.TemplateResponse(
-        "search.html",
-        {"request": request, "n_repositories_indexed": n_repositories_indexed()},
+    return render_template(
+        request=request,
+        template_file="search.html",
+        content={"n_repositories_indexed": n_repositories_indexed()},
     )
 
 
@@ -169,9 +178,10 @@ async def search_results(
     show_previous = current_offset > 0
     show_next = current_offset <= (n_total_found - n_results)
 
-    return templates.TemplateResponse(
-        "results.html",
-        {
+    return render_template(
+        request=request,
+        template_file="results.html",
+        content={
             "request": request,
             "n_found": n_found,
             "n_total_found": n_total_found,
@@ -187,7 +197,10 @@ async def search_results(
 
 @app.get("/ui/about", include_in_schema=False)
 def read_about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+    return render_template(
+        request=request,
+        template_file="about.html",
+    )
 
 
 # ----------------------------------------------------------------------------------
@@ -199,7 +212,7 @@ def read_about(request: Request):
 
 @app.get("/api/code")
 async def api_code():
-    return RedirectResponse("https://github.com/Pierre-VF/oss4climate", status_code=307)
+    return RedirectResponse(URL_CODE_REPOSITORY, status_code=307)
 
 
 @app.get("/api/data_csv")
