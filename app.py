@@ -184,7 +184,7 @@ async def search_results(
     n_results: int = 100,
     offset: int | None = None,
 ):
-    df_out = _search_for_results(query.strip())
+    df_out = _search_for_results(query.strip().lower())
 
     # Adding a primitive refinment mechanism by language (not implemented in the most effective manner)
     if language and (language != "*"):
